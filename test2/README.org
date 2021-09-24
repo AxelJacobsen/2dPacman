@@ -1,0 +1,77 @@
+#+TITLE: Lab 02: creating a simple OpenGL application (II)
+
+* Introduction
+
+In =Lab-01= we learned to set up a basic OpenGL project able to render a
+triangle on a scene. In this lab, we will take the concepts of =Lab-01= further:
+
+- We will set up a project using =CMake= instead of using manual configuration
+  (libraries, paths, etc.)
+- We will add color data to our triangle using /Vertex Attributes/.
+- We will generate a square using /Indexed Drawing/.
+- We will dynamically change the color of the square using /Uniforms/.
+
+* TASKS
+
+** Task 0: Initial setup
+
+ - Visual Studio 19 supports =CMake= out of the box.
+
+ - (Alternative) Install =CMake=. Windows users can go to [[https://www.cmake.org][cmake.org]] and download and install the latest
+    version (3.18). Linux users can use the package manager to install cmake:
+
+    #+BEGIN_SRC bash
+ apt install cmake cmake-curses-gui cmake-qt-gui
+    #+END_SRC
+
+ - Generate a simple =CMakeLists.txt= file that initializes the project and adds
+    an executable file (=lab02=) from the source file (=main.cpp=) and the needed external libraries (=glfw= and =glew=).
+
+ - Create the =main.cpp= file and create a simple application (this can be an
+    empty application on an application that just prints someting out on the screen).
+
+ - Use =cmake= (or =cmake-gui=) to configure a project for your platform (i.e. Visual
+    Studio or Unix Makefiles for linux). TIP: make the /cmake configuration
+    process/ output the results inside a =\build\= folder inside your source
+    project (e.g. ...\lab01\build).
+
+ - Compile and execute your program.
+
+** Task 1: Create your first window and OpenGL context with GLFW
+
+- Modify your =CMakeLists.txt= file to find =GLFW= and make your application
+  link with =GLFW=.
+- Add to your =main.cpp= the necessary code to create a GLFW window.
+  + Keep the window alive until the user presses the =escape= key.
+  + Make sure to capture and inform the user about any possible error derived from
+    the initialization of GLFW or the creation of the window.
+  + Make sure to properly terminate the application when the user closes the
+    application.
+  + Make the OpenGL context current.
+
+** Task 2: Initialize GLEW and clear the screen
+
+- Modify your =CMakeLists.txt= file to find =GLEW= and =OpenGL= and make your application
+  link with =GLEW= and =OpenGL=.
+- Initialize =GLEW=.
+- Use OpenGL basic functions to set the backround of the window to a color of
+  your choice.
+
+** Task 3: Create a triangle and display it on the screen.
+
+- Display a triangle centered in the origin. Use /VAO/, /VBO/ and /Vertex Attributes/ (don't use any /EOB/)
+  + Each vertex should have /position/ and /color/ attributes.
+  + Create a simple vertex shader that forwards the vertex coordinates unchanged
+    and the color corresponding to each vertex.
+  + Create a simple /Fragment shader/ that sets the triangle to the color received
+    by the /Vertex Shader/.
+
+** Task 4: Create a square that changes color over time
+
+- Display a square centered in the origin. Use /VAO/, /VBO/, /EBO/ and /Vertex Attributes/
+  + Each vertex should have only the /position/ attribute.
+  + Create a simple vertex shader that forwards the vertex coordinates unchanged.
+  + Create a simple /Fragment shader/ that sets the triangle to the color received
+    by an uniform.
+  + Make the color of the triangle change periodically over time from /black/ to /green/.
+  + The square shoudl be drawn before the triangle, so both get visible on the scene.
