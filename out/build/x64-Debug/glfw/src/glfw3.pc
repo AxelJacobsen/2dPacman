@@ -1,7 +1,7 @@
-prefix=B:/Users/Axel/Source/Repos/lab02/out/install/x64-Debug
+prefix=B:/Users/Axel/Source/Repos/NewWorking/out/install/x64-Debug
 exec_prefix=${prefix}
-includedir=B:/Users/Axel/Source/Repos/lab02/out/install/x64-Debug/include
-libdir=B:/Users/Axel/Source/Repos/lab02/out/install/x64-Debug/lib
+includedir=B:/Users/Axel/Source/Repos/NewWorking/out/install/x64-Debug/include
+libdir=B:/Users/Axel/Source/Repos/NewWorking/out/install/x64-Debug/lib
 
 Name: GLFW
 Description: A multi-platform library for OpenGL, window and input

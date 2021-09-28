@@ -1,8 +1,8 @@
-# Install script for directory: B:/Users/Axel/Source/Repos/lab02
+# Install script for directory: B:/Users/Axel/Source/Repos/NewWorking
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "B:/Users/Axel/Source/Repos/lab02/out/install/x64-Debug")
+  set(CMAKE_INSTALL_PREFIX "B:/Users/Axel/Source/Repos/NewWorking/out/install/x64-Debug")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -34,12 +34,12 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/glfw/cmake_install.cmake")
+  include("B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/glfw/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/glad/cmake_install.cmake")
+  include("B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/glad/cmake_install.cmake")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

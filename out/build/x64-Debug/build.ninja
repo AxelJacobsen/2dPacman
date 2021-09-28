@@ -76,7 +76,7 @@ build bin\lab02.exe: CXX_EXECUTABLE_LINKER__lab02_Debug CMakeFiles\lab02.dir\mai
 # Utility command for install/local
 
 build CMakeFiles\install\local.util: CUSTOM_COMMAND all
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake"
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake"
   DESC = Installing only the local directory...
   pool = console
   restat = 1
@@ -88,7 +88,7 @@ build install\local: phony CMakeFiles\install\local.util
 # Utility command for install
 
 build CMakeFiles\install.util: CUSTOM_COMMAND all
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -P cmake_install.cmake"
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -P cmake_install.cmake"
   DESC = Install the project...
   pool = console
   restat = 1
@@ -100,7 +100,7 @@ build install: phony CMakeFiles\install.util
 # Utility command for edit_cache
 
 build CMakeFiles\edit_cache.util: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
   DESC = No interactive CMake dialog available...
   restat = 1
 
@@ -111,7 +111,7 @@ build edit_cache: phony CMakeFiles\edit_cache.util
 # Utility command for rebuild_cache
 
 build CMakeFiles\rebuild_cache.util: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" --regenerate-during-build -SB:\Users\Axel\Source\Repos\lab02 -BB:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug"
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" --regenerate-during-build -SB:\Users\Axel\Source\Repos\NewWorking -BB:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug"
   DESC = Running CMake to regenerate build system...
   pool = console
   restat = 1
@@ -126,7 +126,7 @@ build list_install_components: phony
 
 # =============================================================================
 # Write statements declared in CMakeLists.txt:
-# B:/Users/Axel/Source/Repos/lab02/CMakeLists.txt
+# B:/Users/Axel/Source/Repos/NewWorking/CMakeLists.txt
 # =============================================================================
 
 
@@ -140,7 +140,7 @@ build glfw\uninstall: phony glfw\CMakeFiles\uninstall
 # Utility command for install/local
 
 build glfw\CMakeFiles\install\local.util: CUSTOM_COMMAND glfw\all
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug\glfw && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake"
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug\glfw && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake"
   DESC = Installing only the local directory...
   pool = console
   restat = 1
@@ -152,7 +152,7 @@ build glfw\install\local: phony glfw\CMakeFiles\install\local.util
 # Utility command for install
 
 build glfw\CMakeFiles\install.util: CUSTOM_COMMAND glfw\all
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug\glfw && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -P cmake_install.cmake"
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug\glfw && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -P cmake_install.cmake"
   DESC = Install the project...
   pool = console
   restat = 1
@@ -164,7 +164,7 @@ build glfw\install: phony glfw\CMakeFiles\install.util
 # Utility command for edit_cache
 
 build glfw\CMakeFiles\edit_cache.util: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug\glfw && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug\glfw && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
   DESC = No interactive CMake dialog available...
   restat = 1
 
@@ -175,7 +175,7 @@ build glfw\edit_cache: phony glfw\CMakeFiles\edit_cache.util
 # Utility command for rebuild_cache
 
 build glfw\CMakeFiles\rebuild_cache.util: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug\glfw && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" --regenerate-during-build -SB:\Users\Axel\Source\Repos\lab02 -BB:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug"
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug\glfw && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" --regenerate-during-build -SB:\Users\Axel\Source\Repos\NewWorking -BB:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug"
   DESC = Running CMake to regenerate build system...
   pool = console
   restat = 1
@@ -193,11 +193,11 @@ build glfw\list_install_components: phony
 # Custom command for glfw\CMakeFiles\uninstall
 
 build glfw\CMakeFiles\uninstall: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug\glfw && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -P B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/glfw/cmake_uninstall.cmake"
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug\glfw && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -P B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/glfw/cmake_uninstall.cmake"
 
 # =============================================================================
 # Write statements declared in CMakeLists.txt:
-# B:/Users/Axel/Source/Repos/lab02/glfw/CMakeLists.txt
+# B:/Users/Axel/Source/Repos/NewWorking/glfw/CMakeLists.txt
 # =============================================================================
 
 
@@ -217,7 +217,7 @@ build glfw\src\update_mappings: phony glfw\src\CMakeFiles\update_mappings
 # Utility command for rebuild_cache
 
 build glfw\src\CMakeFiles\rebuild_cache.util: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug\glfw\src && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" --regenerate-during-build -SB:\Users\Axel\Source\Repos\lab02 -BB:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug"
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug\glfw\src && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" --regenerate-during-build -SB:\Users\Axel\Source\Repos\NewWorking -BB:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug"
   DESC = Running CMake to regenerate build system...
   pool = console
   restat = 1
@@ -391,7 +391,7 @@ build lib\glfw3.lib: C_STATIC_LIBRARY_LINKER__glfw_Debug glfw\src\CMakeFiles\glf
 # Utility command for install/local
 
 build glfw\src\CMakeFiles\install\local.util: CUSTOM_COMMAND glfw\src\all
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug\glfw\src && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake"
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug\glfw\src && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake"
   DESC = Installing only the local directory...
   pool = console
   restat = 1
@@ -403,7 +403,7 @@ build glfw\src\install\local: phony glfw\src\CMakeFiles\install\local.util
 # Utility command for install
 
 build glfw\src\CMakeFiles\install.util: CUSTOM_COMMAND glfw\src\all
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug\glfw\src && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -P cmake_install.cmake"
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug\glfw\src && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -P cmake_install.cmake"
   DESC = Install the project...
   pool = console
   restat = 1
@@ -415,7 +415,7 @@ build glfw\src\install: phony glfw\src\CMakeFiles\install.util
 # Utility command for edit_cache
 
 build glfw\src\CMakeFiles\edit_cache.util: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug\glfw\src && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug\glfw\src && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
   DESC = No interactive CMake dialog available...
   restat = 1
 
@@ -426,12 +426,12 @@ build glfw\src\edit_cache: phony glfw\src\CMakeFiles\edit_cache.util
 # Custom command for glfw\src\CMakeFiles\update_mappings
 
 build glfw\src\CMakeFiles\update_mappings: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\glfw\src && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -P B:/Users/Axel/Source/Repos/lab02/glfw/CMake/GenerateMappings.cmake mappings.h.in mappings.h"
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\glfw\src && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -P B:/Users/Axel/Source/Repos/NewWorking/glfw/CMake/GenerateMappings.cmake mappings.h.in mappings.h"
   DESC = Updating gamepad mappings from upstream repository
 
 # =============================================================================
 # Write statements declared in CMakeLists.txt:
-# B:/Users/Axel/Source/Repos/lab02/glfw/CMakeLists.txt
+# B:/Users/Axel/Source/Repos/NewWorking/glfw/CMakeLists.txt
 # =============================================================================
 
 # =============================================================================
@@ -452,11 +452,11 @@ build glfw\examples\CMakeFiles\boing.dir\boing.c.obj: C_COMPILER__boing_Debug ..
   TARGET_COMPILE_PDB = glfw\examples\CMakeFiles\boing.dir\
   TARGET_PDB = bin\boing.pdb
 
-build glfw\examples\CMakeFiles\boing.dir\glfw.rc.res: RC_COMPILER__boing_Debug B$:\Users\Axel\Source\Repos\lab02\glfw\examples\glfw.rc || cmake_object_order_depends_target_boing
+build glfw\examples\CMakeFiles\boing.dir\glfw.rc.res: RC_COMPILER__boing_Debug B$:\Users\Axel\Source\Repos\NewWorking\glfw\examples\glfw.rc || cmake_object_order_depends_target_boing
   DEFINES = -D_CRT_SECURE_NO_WARNINGS
   DEP_FILE = glfw\examples\CMakeFiles\boing.dir\glfw.rc.res.d
   FLAGS = -DWIN32 -D_DEBUG
-  INCLUDES = -I B:\Users\Axel\Source\Repos\lab02\glfw\deps -I B:\Users\Axel\Source\Repos\lab02\glfw\include
+  INCLUDES = -I B:\Users\Axel\Source\Repos\NewWorking\glfw\deps -I B:\Users\Axel\Source\Repos\NewWorking\glfw\include
   OBJECT_DIR = glfw\examples\CMakeFiles\boing.dir
   OBJECT_FILE_DIR = glfw\examples\CMakeFiles\boing.dir
   TARGET_COMPILE_PDB = glfw\examples\CMakeFiles\boing.dir\
@@ -509,11 +509,11 @@ build glfw\examples\CMakeFiles\simple.dir\simple.c.obj: C_COMPILER__simple_Debug
   TARGET_COMPILE_PDB = glfw\examples\CMakeFiles\simple.dir\
   TARGET_PDB = bin\simple.pdb
 
-build glfw\examples\CMakeFiles\simple.dir\glfw.rc.res: RC_COMPILER__simple_Debug B$:\Users\Axel\Source\Repos\lab02\glfw\examples\glfw.rc || cmake_object_order_depends_target_simple
+build glfw\examples\CMakeFiles\simple.dir\glfw.rc.res: RC_COMPILER__simple_Debug B$:\Users\Axel\Source\Repos\NewWorking\glfw\examples\glfw.rc || cmake_object_order_depends_target_simple
   DEFINES = -D_CRT_SECURE_NO_WARNINGS
   DEP_FILE = glfw\examples\CMakeFiles\simple.dir\glfw.rc.res.d
   FLAGS = -DWIN32 -D_DEBUG
-  INCLUDES = -I B:\Users\Axel\Source\Repos\lab02\glfw\deps -I B:\Users\Axel\Source\Repos\lab02\glfw\include
+  INCLUDES = -I B:\Users\Axel\Source\Repos\NewWorking\glfw\deps -I B:\Users\Axel\Source\Repos\NewWorking\glfw\include
   OBJECT_DIR = glfw\examples\CMakeFiles\simple.dir
   OBJECT_FILE_DIR = glfw\examples\CMakeFiles\simple.dir
   TARGET_COMPILE_PDB = glfw\examples\CMakeFiles\simple.dir\
@@ -566,11 +566,11 @@ build glfw\examples\CMakeFiles\gears.dir\gears.c.obj: C_COMPILER__gears_Debug ..
   TARGET_COMPILE_PDB = glfw\examples\CMakeFiles\gears.dir\
   TARGET_PDB = bin\gears.pdb
 
-build glfw\examples\CMakeFiles\gears.dir\glfw.rc.res: RC_COMPILER__gears_Debug B$:\Users\Axel\Source\Repos\lab02\glfw\examples\glfw.rc || cmake_object_order_depends_target_gears
+build glfw\examples\CMakeFiles\gears.dir\glfw.rc.res: RC_COMPILER__gears_Debug B$:\Users\Axel\Source\Repos\NewWorking\glfw\examples\glfw.rc || cmake_object_order_depends_target_gears
   DEFINES = -D_CRT_SECURE_NO_WARNINGS
   DEP_FILE = glfw\examples\CMakeFiles\gears.dir\glfw.rc.res.d
   FLAGS = -DWIN32 -D_DEBUG
-  INCLUDES = -I B:\Users\Axel\Source\Repos\lab02\glfw\deps -I B:\Users\Axel\Source\Repos\lab02\glfw\include
+  INCLUDES = -I B:\Users\Axel\Source\Repos\NewWorking\glfw\deps -I B:\Users\Axel\Source\Repos\NewWorking\glfw\include
   OBJECT_DIR = glfw\examples\CMakeFiles\gears.dir
   OBJECT_FILE_DIR = glfw\examples\CMakeFiles\gears.dir
   TARGET_COMPILE_PDB = glfw\examples\CMakeFiles\gears.dir\
@@ -623,11 +623,11 @@ build glfw\examples\CMakeFiles\particles.dir\particles.c.obj: C_COMPILER__partic
   TARGET_COMPILE_PDB = glfw\examples\CMakeFiles\particles.dir\
   TARGET_PDB = bin\particles.pdb
 
-build glfw\examples\CMakeFiles\particles.dir\glfw.rc.res: RC_COMPILER__particles_Debug B$:\Users\Axel\Source\Repos\lab02\glfw\examples\glfw.rc || cmake_object_order_depends_target_particles
+build glfw\examples\CMakeFiles\particles.dir\glfw.rc.res: RC_COMPILER__particles_Debug B$:\Users\Axel\Source\Repos\NewWorking\glfw\examples\glfw.rc || cmake_object_order_depends_target_particles
   DEFINES = -D_CRT_SECURE_NO_WARNINGS
   DEP_FILE = glfw\examples\CMakeFiles\particles.dir\glfw.rc.res.d
   FLAGS = -DWIN32 -D_DEBUG
-  INCLUDES = -I B:\Users\Axel\Source\Repos\lab02\glfw\deps -I B:\Users\Axel\Source\Repos\lab02\glfw\include
+  INCLUDES = -I B:\Users\Axel\Source\Repos\NewWorking\glfw\deps -I B:\Users\Axel\Source\Repos\NewWorking\glfw\include
   OBJECT_DIR = glfw\examples\CMakeFiles\particles.dir
   OBJECT_FILE_DIR = glfw\examples\CMakeFiles\particles.dir
   TARGET_COMPILE_PDB = glfw\examples\CMakeFiles\particles.dir\
@@ -698,11 +698,11 @@ build glfw\examples\CMakeFiles\heightmap.dir\heightmap.c.obj: C_COMPILER__height
   TARGET_COMPILE_PDB = glfw\examples\CMakeFiles\heightmap.dir\
   TARGET_PDB = bin\heightmap.pdb
 
-build glfw\examples\CMakeFiles\heightmap.dir\glfw.rc.res: RC_COMPILER__heightmap_Debug B$:\Users\Axel\Source\Repos\lab02\glfw\examples\glfw.rc || cmake_object_order_depends_target_heightmap
+build glfw\examples\CMakeFiles\heightmap.dir\glfw.rc.res: RC_COMPILER__heightmap_Debug B$:\Users\Axel\Source\Repos\NewWorking\glfw\examples\glfw.rc || cmake_object_order_depends_target_heightmap
   DEFINES = -D_CRT_SECURE_NO_WARNINGS
   DEP_FILE = glfw\examples\CMakeFiles\heightmap.dir\glfw.rc.res.d
   FLAGS = -DWIN32 -D_DEBUG
-  INCLUDES = -I B:\Users\Axel\Source\Repos\lab02\glfw\deps -I B:\Users\Axel\Source\Repos\lab02\glfw\include
+  INCLUDES = -I B:\Users\Axel\Source\Repos\NewWorking\glfw\deps -I B:\Users\Axel\Source\Repos\NewWorking\glfw\include
   OBJECT_DIR = glfw\examples\CMakeFiles\heightmap.dir
   OBJECT_FILE_DIR = glfw\examples\CMakeFiles\heightmap.dir
   TARGET_COMPILE_PDB = glfw\examples\CMakeFiles\heightmap.dir\
@@ -761,11 +761,11 @@ build glfw\examples\CMakeFiles\splitview.dir\splitview.c.obj: C_COMPILER__splitv
   TARGET_COMPILE_PDB = glfw\examples\CMakeFiles\splitview.dir\
   TARGET_PDB = bin\splitview.pdb
 
-build glfw\examples\CMakeFiles\splitview.dir\glfw.rc.res: RC_COMPILER__splitview_Debug B$:\Users\Axel\Source\Repos\lab02\glfw\examples\glfw.rc || cmake_object_order_depends_target_splitview
+build glfw\examples\CMakeFiles\splitview.dir\glfw.rc.res: RC_COMPILER__splitview_Debug B$:\Users\Axel\Source\Repos\NewWorking\glfw\examples\glfw.rc || cmake_object_order_depends_target_splitview
   DEFINES = -D_CRT_SECURE_NO_WARNINGS
   DEP_FILE = glfw\examples\CMakeFiles\splitview.dir\glfw.rc.res.d
   FLAGS = -DWIN32 -D_DEBUG
-  INCLUDES = -I B:\Users\Axel\Source\Repos\lab02\glfw\deps -I B:\Users\Axel\Source\Repos\lab02\glfw\include
+  INCLUDES = -I B:\Users\Axel\Source\Repos\NewWorking\glfw\deps -I B:\Users\Axel\Source\Repos\NewWorking\glfw\include
   OBJECT_DIR = glfw\examples\CMakeFiles\splitview.dir
   OBJECT_FILE_DIR = glfw\examples\CMakeFiles\splitview.dir
   TARGET_COMPILE_PDB = glfw\examples\CMakeFiles\splitview.dir\
@@ -818,11 +818,11 @@ build glfw\examples\CMakeFiles\offscreen.dir\offscreen.c.obj: C_COMPILER__offscr
   TARGET_COMPILE_PDB = glfw\examples\CMakeFiles\offscreen.dir\
   TARGET_PDB = bin\offscreen.pdb
 
-build glfw\examples\CMakeFiles\offscreen.dir\glfw.rc.res: RC_COMPILER__offscreen_Debug B$:\Users\Axel\Source\Repos\lab02\glfw\examples\glfw.rc || cmake_object_order_depends_target_offscreen
+build glfw\examples\CMakeFiles\offscreen.dir\glfw.rc.res: RC_COMPILER__offscreen_Debug B$:\Users\Axel\Source\Repos\NewWorking\glfw\examples\glfw.rc || cmake_object_order_depends_target_offscreen
   DEFINES = -D_CRT_SECURE_NO_WARNINGS
   DEP_FILE = glfw\examples\CMakeFiles\offscreen.dir\glfw.rc.res.d
   FLAGS = -DWIN32 -D_DEBUG
-  INCLUDES = -I B:\Users\Axel\Source\Repos\lab02\glfw\deps -I B:\Users\Axel\Source\Repos\lab02\glfw\include
+  INCLUDES = -I B:\Users\Axel\Source\Repos\NewWorking\glfw\deps -I B:\Users\Axel\Source\Repos\NewWorking\glfw\include
   OBJECT_DIR = glfw\examples\CMakeFiles\offscreen.dir
   OBJECT_FILE_DIR = glfw\examples\CMakeFiles\offscreen.dir
   TARGET_COMPILE_PDB = glfw\examples\CMakeFiles\offscreen.dir\
@@ -875,11 +875,11 @@ build glfw\examples\CMakeFiles\sharing.dir\sharing.c.obj: C_COMPILER__sharing_De
   TARGET_COMPILE_PDB = glfw\examples\CMakeFiles\sharing.dir\
   TARGET_PDB = bin\sharing.pdb
 
-build glfw\examples\CMakeFiles\sharing.dir\glfw.rc.res: RC_COMPILER__sharing_Debug B$:\Users\Axel\Source\Repos\lab02\glfw\examples\glfw.rc || cmake_object_order_depends_target_sharing
+build glfw\examples\CMakeFiles\sharing.dir\glfw.rc.res: RC_COMPILER__sharing_Debug B$:\Users\Axel\Source\Repos\NewWorking\glfw\examples\glfw.rc || cmake_object_order_depends_target_sharing
   DEFINES = -D_CRT_SECURE_NO_WARNINGS
   DEP_FILE = glfw\examples\CMakeFiles\sharing.dir\glfw.rc.res.d
   FLAGS = -DWIN32 -D_DEBUG
-  INCLUDES = -I B:\Users\Axel\Source\Repos\lab02\glfw\deps -I B:\Users\Axel\Source\Repos\lab02\glfw\include
+  INCLUDES = -I B:\Users\Axel\Source\Repos\NewWorking\glfw\deps -I B:\Users\Axel\Source\Repos\NewWorking\glfw\include
   OBJECT_DIR = glfw\examples\CMakeFiles\sharing.dir
   OBJECT_FILE_DIR = glfw\examples\CMakeFiles\sharing.dir
   TARGET_COMPILE_PDB = glfw\examples\CMakeFiles\sharing.dir\
@@ -932,11 +932,11 @@ build glfw\examples\CMakeFiles\wave.dir\wave.c.obj: C_COMPILER__wave_Debug ..\..
   TARGET_COMPILE_PDB = glfw\examples\CMakeFiles\wave.dir\
   TARGET_PDB = bin\wave.pdb
 
-build glfw\examples\CMakeFiles\wave.dir\glfw.rc.res: RC_COMPILER__wave_Debug B$:\Users\Axel\Source\Repos\lab02\glfw\examples\glfw.rc || cmake_object_order_depends_target_wave
+build glfw\examples\CMakeFiles\wave.dir\glfw.rc.res: RC_COMPILER__wave_Debug B$:\Users\Axel\Source\Repos\NewWorking\glfw\examples\glfw.rc || cmake_object_order_depends_target_wave
   DEFINES = -D_CRT_SECURE_NO_WARNINGS
   DEP_FILE = glfw\examples\CMakeFiles\wave.dir\glfw.rc.res.d
   FLAGS = -DWIN32 -D_DEBUG
-  INCLUDES = -I B:\Users\Axel\Source\Repos\lab02\glfw\deps -I B:\Users\Axel\Source\Repos\lab02\glfw\include
+  INCLUDES = -I B:\Users\Axel\Source\Repos\NewWorking\glfw\deps -I B:\Users\Axel\Source\Repos\NewWorking\glfw\include
   OBJECT_DIR = glfw\examples\CMakeFiles\wave.dir
   OBJECT_FILE_DIR = glfw\examples\CMakeFiles\wave.dir
   TARGET_COMPILE_PDB = glfw\examples\CMakeFiles\wave.dir\
@@ -976,7 +976,7 @@ build bin\wave.exe: C_EXECUTABLE_LINKER__wave_Debug glfw\examples\CMakeFiles\wav
 # Utility command for edit_cache
 
 build glfw\examples\CMakeFiles\edit_cache.util: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug\glfw\examples && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug\glfw\examples && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
   DESC = No interactive CMake dialog available...
   restat = 1
 
@@ -987,7 +987,7 @@ build glfw\examples\edit_cache: phony glfw\examples\CMakeFiles\edit_cache.util
 # Utility command for rebuild_cache
 
 build glfw\examples\CMakeFiles\rebuild_cache.util: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug\glfw\examples && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" --regenerate-during-build -SB:\Users\Axel\Source\Repos\lab02 -BB:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug"
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug\glfw\examples && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" --regenerate-during-build -SB:\Users\Axel\Source\Repos\NewWorking -BB:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug"
   DESC = Running CMake to regenerate build system...
   pool = console
   restat = 1
@@ -999,7 +999,7 @@ build glfw\examples\rebuild_cache: phony glfw\examples\CMakeFiles\rebuild_cache.
 # Utility command for install/local
 
 build glfw\examples\CMakeFiles\install\local.util: CUSTOM_COMMAND glfw\examples\all
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug\glfw\examples && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake"
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug\glfw\examples && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake"
   DESC = Installing only the local directory...
   pool = console
   restat = 1
@@ -1011,7 +1011,7 @@ build glfw\examples\install\local: phony glfw\examples\CMakeFiles\install\local.
 # Utility command for install
 
 build glfw\examples\CMakeFiles\install.util: CUSTOM_COMMAND glfw\examples\all
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug\glfw\examples && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -P cmake_install.cmake"
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug\glfw\examples && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -P cmake_install.cmake"
   DESC = Install the project...
   pool = console
   restat = 1
@@ -1020,7 +1020,7 @@ build glfw\examples\install: phony glfw\examples\CMakeFiles\install.util
 
 # =============================================================================
 # Write statements declared in CMakeLists.txt:
-# B:/Users/Axel/Source/Repos/lab02/glfw/CMakeLists.txt
+# B:/Users/Axel/Source/Repos/NewWorking/glfw/CMakeLists.txt
 # =============================================================================
 
 # =============================================================================
@@ -1876,7 +1876,7 @@ build bin\tearing.exe: C_EXECUTABLE_LINKER__tearing_Debug glfw\tests\CMakeFiles\
 # Utility command for edit_cache
 
 build glfw\tests\CMakeFiles\edit_cache.util: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug\glfw\tests && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug\glfw\tests && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
   DESC = No interactive CMake dialog available...
   restat = 1
 
@@ -2084,7 +2084,7 @@ build bin\windows.exe: C_EXECUTABLE_LINKER__windows_Debug glfw\tests\CMakeFiles\
 # Utility command for rebuild_cache
 
 build glfw\tests\CMakeFiles\rebuild_cache.util: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug\glfw\tests && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" --regenerate-during-build -SB:\Users\Axel\Source\Repos\lab02 -BB:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug"
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug\glfw\tests && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" --regenerate-during-build -SB:\Users\Axel\Source\Repos\NewWorking -BB:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug"
   DESC = Running CMake to regenerate build system...
   pool = console
   restat = 1
@@ -2096,7 +2096,7 @@ build glfw\tests\rebuild_cache: phony glfw\tests\CMakeFiles\rebuild_cache.util
 # Utility command for install/local
 
 build glfw\tests\CMakeFiles\install\local.util: CUSTOM_COMMAND glfw\tests\all
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug\glfw\tests && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake"
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug\glfw\tests && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake"
   DESC = Installing only the local directory...
   pool = console
   restat = 1
@@ -2108,7 +2108,7 @@ build glfw\tests\install\local: phony glfw\tests\CMakeFiles\install\local.util
 # Utility command for install
 
 build glfw\tests\CMakeFiles\install.util: CUSTOM_COMMAND glfw\tests\all
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug\glfw\tests && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -P cmake_install.cmake"
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug\glfw\tests && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -P cmake_install.cmake"
   DESC = Install the project...
   pool = console
   restat = 1
@@ -2117,7 +2117,7 @@ build glfw\tests\install: phony glfw\tests\CMakeFiles\install.util
 
 # =============================================================================
 # Write statements declared in CMakeLists.txt:
-# B:/Users/Axel/Source/Repos/lab02/CMakeLists.txt
+# B:/Users/Axel/Source/Repos/NewWorking/CMakeLists.txt
 # =============================================================================
 
 # =============================================================================
@@ -2160,7 +2160,7 @@ build lib\glad.lib: C_STATIC_LIBRARY_LINKER__glad_Debug glad\CMakeFiles\glad.dir
 # Utility command for install/local
 
 build glad\CMakeFiles\install\local.util: CUSTOM_COMMAND glad\all
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug\glad && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake"
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug\glad && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake"
   DESC = Installing only the local directory...
   pool = console
   restat = 1
@@ -2172,7 +2172,7 @@ build glad\install\local: phony glad\CMakeFiles\install\local.util
 # Utility command for install
 
 build glad\CMakeFiles\install.util: CUSTOM_COMMAND glad\all
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug\glad && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -P cmake_install.cmake"
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug\glad && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -P cmake_install.cmake"
   DESC = Install the project...
   pool = console
   restat = 1
@@ -2184,7 +2184,7 @@ build glad\install: phony glad\CMakeFiles\install.util
 # Utility command for edit_cache
 
 build glad\CMakeFiles\edit_cache.util: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug\glad && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug\glad && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
   DESC = No interactive CMake dialog available...
   restat = 1
 
@@ -2195,7 +2195,7 @@ build glad\edit_cache: phony glad\CMakeFiles\edit_cache.util
 # Utility command for rebuild_cache
 
 build glad\CMakeFiles\rebuild_cache.util: CUSTOM_COMMAND
-  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug\glad && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" --regenerate-during-build -SB:\Users\Axel\Source\Repos\lab02 -BB:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug"
+  COMMAND = cmd.exe /C "cd /D B:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug\glad && "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" --regenerate-during-build -SB:\Users\Axel\Source\Repos\NewWorking -BB:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug"
   DESC = Running CMake to regenerate build system...
   pool = console
   restat = 1
@@ -2349,42 +2349,42 @@ build windows.exe: phony bin\windows.exe
 # =============================================================================
 
 #############################################
-# Folder: B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug
+# Folder: B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug
 
 build all: phony bin\lab02.exe glfw\all glad\all
 
 # =============================================================================
 
 #############################################
-# Folder: B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/glad
+# Folder: B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/glad
 
 build glad\all: phony lib\glad.lib
 
 # =============================================================================
 
 #############################################
-# Folder: B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/glfw
+# Folder: B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/glfw
 
 build glfw\all: phony glfw\src\all glfw\examples\all glfw\tests\all
 
 # =============================================================================
 
 #############################################
-# Folder: B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/glfw/examples
+# Folder: B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/glfw/examples
 
 build glfw\examples\all: phony bin\boing.exe bin\simple.exe bin\gears.exe bin\particles.exe bin\heightmap.exe bin\splitview.exe bin\offscreen.exe bin\sharing.exe bin\wave.exe
 
 # =============================================================================
 
 #############################################
-# Folder: B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/glfw/src
+# Folder: B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/glfw/src
 
 build glfw\src\all: phony lib\glfw3.lib
 
 # =============================================================================
 
 #############################################
-# Folder: B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/glfw/tests
+# Folder: B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/glfw/tests
 
 build glfw\tests\all: phony bin\clipboard.exe bin\events.exe bin\msaa.exe bin\glfwinfo.exe bin\iconify.exe bin\monitors.exe bin\reopen.exe bin\cursor.exe bin\empty.exe bin\gamma.exe bin\icon.exe bin\inputlag.exe bin\joysticks.exe bin\threads.exe bin\opacity.exe bin\tearing.exe bin\timeout.exe bin\title.exe bin\triangle-vulkan.exe bin\windows.exe
 

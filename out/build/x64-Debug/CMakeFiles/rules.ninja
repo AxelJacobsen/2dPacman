@@ -695,7 +695,7 @@ rule C_STATIC_LIBRARY_LINKER__glad_Debug
 # Rule for re-running cmake.
 
 rule RERUN_CMAKE
-  command = "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" --regenerate-during-build -SB:\Users\Axel\Source\Repos\lab02 -BB:\Users\Axel\Source\Repos\lab02\out\build\x64-Debug
+  command = "B:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" --regenerate-during-build -SB:\Users\Axel\Source\Repos\NewWorking -BB:\Users\Axel\Source\Repos\NewWorking\out\build\x64-Debug
   description = Re-running CMake...
   generator = 1
 

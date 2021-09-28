@@ -1,9 +1,9 @@
 
-if (NOT EXISTS "B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/glfw/install_manifest.txt")
-  message(FATAL_ERROR "Cannot find install manifest: \"B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/glfw/install_manifest.txt\"")
+if (NOT EXISTS "B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/glfw/install_manifest.txt")
+  message(FATAL_ERROR "Cannot find install manifest: \"B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/glfw/install_manifest.txt\"")
 endif()
 
-file(READ "B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/glfw/install_manifest.txt" files)
+file(READ "B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/glfw/install_manifest.txt" files)
 string(REGEX REPLACE "\n" ";" files "${files}")
 
 foreach (file ${files})

@@ -4,9 +4,15 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <iostream>
+#include <fstream>
 #include <set>
 #include <cmath>
+#include <vector>
 
 // -----------------------------------------------------------------------------
 // FUNCTION PROTOTYPES
@@ -25,12 +31,72 @@ void GLAPIENTRY MessageCallback(GLenum source,
                                 GLsizei length,
                                 const GLchar* message,
                                 const void* userParam);
+std::vector<float> findAdjacencies(const int y, const int x, const std::vector<std::vector<int>> levelList, std::vector<std::vector<int>> *logWalls);
+std::vector<float> getRelativeCoords(std::vector<int> numPos);
+
+int width = 24, height = 24;
+int globTest = 3;
+
+GLfloat triangle[3 * 3 * 2] =
+{
+  -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
+  0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f
+};
 
 // -----------------------------------------------------------------------------
 // ENTRY POINT
 // -----------------------------------------------------------------------------
 int main()
 {
+    int spriteSize = 64;
+    int resize = 3;
+    
+  // Read from level file;
+  std::ifstream inn("../../../../levels/level0");
+  if (inn) {
+      inn >> width; inn.ignore(1); inn >> height;
+      printf("\nWidth: %i\nHeight: %i\n", width, height);
+      std::vector<std::vector<int>> levelVect(height, std::vector<int>(width, 0));
+      std::vector<std::vector<int>> wallLog(height, std::vector<int>(width, 0));
+      int row = 0, column = 0;
+      int temp;
+      inn >> temp;
+      printf("\n");
+      while (column < height) {
+          if (row < width) {
+              levelVect[column][row] = temp;
+              printf("%i ",temp);
+              row++;
+              inn >> temp;
+          }
+          else { row = 0; column++; printf("\n"); }
+      }
+      inn.close();
+      
+      for (int i = 0; i < height; i++) {
+          for (int j = 0; j < width; j++) {
+              if (levelVect[i][j] == 1 && wallLog[i][j] == 0){//wallLog[i][j] >= 5 && wallLog[i][j] != 6) { // 5 means that the "coord" has already been included in an earlier draw
+                  findAdjacencies(i, j, levelVect, &wallLog);
+              }
+          }
+      }
+
+      printf("\n\n\n");
+      row = 0, column = 0;
+      while (column < height) {
+          if (row < width) {
+              levelVect[column][row];
+              printf("%i ", wallLog[column][row]);
+              row++;
+          }
+          else { row = 0; column++; printf("\n"); }
+      }
+
+  }
+  else { system("dir"); printf("\n\nBIG PROBLEMO, couldnt find level file\n\n"); }
+  
+
   // Initialization of GLFW
   if(!glfwInit())
     {
@@ -47,7 +113,7 @@ int main()
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  auto window = glfwCreateWindow(1200, 1200, "Lab02", nullptr, nullptr);
+  auto window = glfwCreateWindow(width*spriteSize/resize, height*spriteSize/resize, "Lab02", nullptr, nullptr);
   if (window == nullptr)
     {
     std::cerr << "GLFW failed on window creation." << '\n';
@@ -82,7 +148,7 @@ int main()
   auto triangleShaderProgram = CompileShader(triangleVertexShaderSrc,
                                              triangleFragmentShaderSrc);
 
-  glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
   bool alternate = false;
   double currentTime = 0.0;
@@ -137,6 +203,53 @@ int main()
   return EXIT_SUCCESS;
 }
 
+std::vector<float> findAdjacencies(const int y, const int x, const std::vector<std::vector<int>> levelList, std::vector<std::vector<int>> *logWalls) {
+    std::vector<int>    tempCoords;
+    int loggedAmmount = 0;
+    int kol = y, rad = x;
+    tempCoords.push_back(y);
+    tempCoords.push_back(x);
+    if (levelList[kol][rad] != 0 && levelList[kol][rad] != 2){
+        while (rad < width && levelList[kol][rad] != 0 && levelList[kol][rad] != 2) {
+            (*logWalls)[kol][rad] = globTest;// 5;
+            printf("\nLog%i: C: %i R: %i", loggedAmmount, kol, rad);
+            rad++;
+            if (rad == width && kol != height-1) {
+                rad = 0; kol++; 
+            }
+            else if (rad == width && kol == height - 1) { rad--; break; }
+            loggedAmmount++;
+        }
+        if (levelList[kol][rad] != 2) { rad--; };
+    }
+    if (loggedAmmount > 1 && rad == 0) {
+        (*logWalls)[kol][rad] = 0; 
+        printf("\n\nWRAP FIXED\n\n");
+        rad = width-1; kol--;
+        loggedAmmount--;
+        (*logWalls)[kol][rad] = 0;
+    }
+    if (loggedAmmount == 1) {
+        while (levelList[kol][rad] != 0 && kol<height-1 && levelList[kol][rad] != 2) {
+            (*logWalls)[kol][rad] = globTest; //5;
+            printf("\nLog%i: C: %i R: %i", loggedAmmount, kol, rad);
+            kol++;
+        }
+    }
+    if (levelList[kol][rad] == 2) {(*logWalls)[kol][rad]++; rad++;  }
+    globTest++;
+    tempCoords.push_back(kol);
+    tempCoords.push_back(rad);
+    //relativeCoords.push_back(1.0f);
+    return getRelativeCoords(tempCoords);
+};
+
+std::vector<float> getRelativeCoords(std::vector<int> numPos) {
+    std::vector<float>  relativeCoords;
+    //create an array with the format for squares
+    return relativeCoords;
+}
+
 
 // -----------------------------------------------------------------------------
 // COMPILE SHADER
@@ -175,13 +288,6 @@ GLuint CompileShader(const std::string& vertexShaderSrc,
 GLuint CreateTriangle()
 {
 
-  GLfloat triangle[3*3*2] =
-    {
-      -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-      0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
-      0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f
-    };
-
   GLuint vao;
   glCreateVertexArrays(1, &vao);
   glBindVertexArray(vao);
@@ -206,7 +312,6 @@ GLuint CreateTriangle()
 // -----------------------------------------------------------------------------
 GLuint CreateSquare()
 {
-
   GLfloat square[4*3] =
     {
       -0.5f, 0.5f, 0.0f,
@@ -227,8 +332,11 @@ GLuint CreateSquare()
   GLuint ebo;
   glGenBuffers(1, &ebo);
 
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(square), square, GL_STATIC_DRAW);
+  glBindBuffer( GL_ARRAY_BUFFER, vbo);
+  glBufferData( GL_ARRAY_BUFFER,
+                sizeof(square),
+                square,
+                GL_STATIC_DRAW);
 
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*3, (const void *)0);
@@ -272,6 +380,26 @@ void CleanVAO(GLuint &vao)
     }
 
   glDeleteVertexArrays(1, &vao);
+}
+
+void Camera(const float time, const GLuint shaderprogram)
+{
+
+    //Matrix which helps project our 3D objects onto a 2D image. Not as relevant in 2D projects
+    //The numbers here represent the aspect ratio. Since our window is a square, aspect ratio here is 1:1, but this can be changed.
+    glm::mat4 projection = glm::ortho(-1.f, 1.f, -1.f, 1.f);
+
+    //Matrix which defines where in the scene our camera is
+    //                           Position of camera     Direction camera is looking     Vector pointing upwards
+    glm::mat4 view = glm::lookAt(glm::vec3(0, 0, -1), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+
+    //Get unforms to place our matrices into
+    GLuint projmat = glGetUniformLocation(shaderprogram, "u_ProjectionMat");
+    GLuint viewmat = glGetUniformLocation(shaderprogram, "u_ViewMat");
+
+    //Send data from matrices to uniform
+    glUniformMatrix4fv(projmat, 1, false, glm::value_ptr(projection));
+    glUniformMatrix4fv(viewmat, 1, false, glm::value_ptr(view));
 }
 
 // -----------------------------------------------------------------------------

@@ -1,8 +1,8 @@
-# Install script for directory: B:/Users/Axel/Source/Repos/lab02/glfw
+# Install script for directory: B:/Users/Axel/Source/Repos/NewWorking/glfw
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "B:/Users/Axel/Source/Repos/lab02/out/install/x64-Debug")
+  set(CMAKE_INSTALL_PREFIX "B:/Users/Axel/Source/Repos/NewWorking/out/install/x64-Debug")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -33,13 +33,13 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE DIRECTORY FILES "B:/Users/Axel/Source/Repos/lab02/glfw/include/GLFW" FILES_MATCHING REGEX "/glfw3\\.h$" REGEX "/glfw3native\\.h$")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE DIRECTORY FILES "B:/Users/Axel/Source/Repos/NewWorking/glfw/include/GLFW" FILES_MATCHING REGEX "/glfw3\\.h$" REGEX "/glfw3native\\.h$")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/glfw3" TYPE FILE FILES
-    "B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/glfw/src/glfw3Config.cmake"
-    "B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/glfw/src/glfw3ConfigVersion.cmake"
+    "B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/glfw/src/glfw3Config.cmake"
+    "B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/glfw/src/glfw3ConfigVersion.cmake"
     )
 endif()
 
@@ -47,7 +47,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/glfw3/glfw3Targets.cmake")
     file(DIFFERENT EXPORT_FILE_CHANGED FILES
          "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/glfw3/glfw3Targets.cmake"
-         "B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/glfw/CMakeFiles/Export/lib/cmake/glfw3/glfw3Targets.cmake")
+         "B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/glfw/CMakeFiles/Export/lib/cmake/glfw3/glfw3Targets.cmake")
     if(EXPORT_FILE_CHANGED)
       file(GLOB OLD_CONFIG_FILES "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/glfw3/glfw3Targets-*.cmake")
       if(OLD_CONFIG_FILES)
@@ -56,21 +56,21 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
       endif()
     endif()
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/glfw3" TYPE FILE FILES "B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/glfw/CMakeFiles/Export/lib/cmake/glfw3/glfw3Targets.cmake")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/glfw3" TYPE FILE FILES "B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/glfw/CMakeFiles/Export/lib/cmake/glfw3/glfw3Targets.cmake")
   if("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
-    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/glfw3" TYPE FILE FILES "B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/glfw/CMakeFiles/Export/lib/cmake/glfw3/glfw3Targets-debug.cmake")
+    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/glfw3" TYPE FILE FILES "B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/glfw/CMakeFiles/Export/lib/cmake/glfw3/glfw3Targets-debug.cmake")
   endif()
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/glfw/src/glfw3.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/glfw/src/glfw3.pc")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/glfw/src/cmake_install.cmake")
-  include("B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/glfw/examples/cmake_install.cmake")
-  include("B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/glfw/tests/cmake_install.cmake")
+  include("B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/glfw/src/cmake_install.cmake")
+  include("B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/glfw/examples/cmake_install.cmake")
+  include("B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/glfw/tests/cmake_install.cmake")
 
 endif()
 

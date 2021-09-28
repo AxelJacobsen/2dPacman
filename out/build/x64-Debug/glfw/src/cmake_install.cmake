@@ -1,8 +1,8 @@
-# Install script for directory: B:/Users/Axel/Source/Repos/lab02/glfw/src
+# Install script for directory: B:/Users/Axel/Source/Repos/NewWorking/glfw/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "B:/Users/Axel/Source/Repos/lab02/out/install/x64-Debug")
+  set(CMAKE_INSTALL_PREFIX "B:/Users/Axel/Source/Repos/NewWorking/out/install/x64-Debug")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -33,6 +33,6 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "B:/Users/Axel/Source/Repos/lab02/out/build/x64-Debug/lib/glfw3.lib")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "B:/Users/Axel/Source/Repos/NewWorking/out/build/x64-Debug/lib/glfw3.lib")
 endif()
 
