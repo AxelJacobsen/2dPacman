@@ -32,11 +32,16 @@ void GLAPIENTRY MessageCallback(GLenum source,
                                 GLsizei length,
                                 const GLchar* message,
                                 const void* userParam);
-std::vector<float> findAdjacencies(const int y, const int x, const std::vector<std::vector<int>> levelList, std::vector<std::vector<int>> *logWalls);
-std::vector<float> getRelativeCoords(std::vector<int> numPos);
 
-int width = 24, height = 24;
-int globTest = 3;
+std::vector<float> findAdjacencies(const int y, const int x, const std::vector<std::vector<int>> levelList, std::vector<std::vector<int>>* logWalls);
+std::vector<float> getRelativeCoords(std::vector<int> numPos);
+void getRelativeCoordsJustInt(int y, int x, std::vector<float>* wallPoint);
+// -----------------------------------------------------------------------------
+// Globals
+// -----------------------------------------------------------------------------
+GLfloat map[6];
+
+int width = 24, height = 24, walls = 0;
 
 GLfloat triangle[3 * 3 * 2] =
 {
@@ -45,13 +50,13 @@ GLfloat triangle[3 * 3 * 2] =
   0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f
 };
 
+int spriteSize = 64, resize = 3;
+
 // -----------------------------------------------------------------------------
 // ENTRY POINT
 // -----------------------------------------------------------------------------
 int main()
 {
-    int spriteSize = 64;
-    int resize = 3;
     
   // Read from level file;
   std::ifstream inn("../../../../levels/level0");
@@ -64,36 +69,33 @@ int main()
       int temp;
       inn >> temp;
       printf("\n");
-      while (column < height) {
+      while (column < height) { // adds "walls" int vector
           if (row < width) {
               levelVect[column][row] = temp;
               printf("%i ",temp);
+              if (temp == 1) { walls++; }
               row++;
               inn >> temp;
           }
           else { row = 0; column++; printf("\n"); }
       }
       inn.close();
+
+      walls *= 12;                      //Reasizes total number of walls to include all points and XYZ
+      walls += 100;
+      std::vector<float> coords(walls); // 3 numbers per point, and 4 points per square Around 100 walls
+      walls = 0;                        //resets Walls for later usage
       
-      for (int i = 0; i < height; i++) {
+      for (int i = 0; i < height; i++) {    // creates map
           for (int j = 0; j < width; j++) {
-              if (levelVect[i][j] == 1 && wallLog[i][j] == 0){//wallLog[i][j] >= 5 && wallLog[i][j] != 6) { // 5 means that the "coord" has already been included in an earlier draw
-                  findAdjacencies(i, j, levelVect, &wallLog);
+              if (levelVect[i][j] == 1 && wallLog[i][j] == 0){
+                  //findAdjacencies(i, j, levelVect, &wallLog);
+                  getRelativeCoordsJustInt(i, j, &coords);
+                  walls++;
               }
           }
       }
-
-      printf("\n\n\n");
-      row = 0, column = 0;
-      while (column < height) {
-          if (row < width) {
-              levelVect[column][row];
-              printf("%i ", wallLog[column][row]);
-              row++;
-          }
-          else { row = 0; column++; printf("\n"); }
-      }
-
+      //for (int l = 1; l < coords.size(); l++) {if (l % 3 == 0) { printf("\n"); } printf("%f ", coords[l]);};
   }
   else { system("dir"); printf("\n\nBIG PROBLEMO, couldnt find level file\n\n"); }
   
@@ -212,7 +214,7 @@ std::vector<float> findAdjacencies(const int y, const int x, const std::vector<s
     tempCoords.push_back(x);
     if (levelList[kol][rad] != 0 && levelList[kol][rad] != 2){
         while (rad < width && levelList[kol][rad] != 0 && levelList[kol][rad] != 2) {
-            (*logWalls)[kol][rad] = globTest;// 5;
+            (*logWalls)[kol][rad] = 5;
             printf("\nLog%i: C: %i R: %i", loggedAmmount, kol, rad);
             rad++;
             if (rad == width && kol != height-1) {
@@ -232,13 +234,12 @@ std::vector<float> findAdjacencies(const int y, const int x, const std::vector<s
     }
     if (loggedAmmount == 1) {
         while (levelList[kol][rad] != 0 && kol<height-1 && levelList[kol][rad] != 2) {
-            (*logWalls)[kol][rad] = globTest; //5;
+            (*logWalls)[kol][rad] = 5;
             printf("\nLog%i: C: %i R: %i", loggedAmmount, kol, rad);
             kol++;
         }
     }
     if (levelList[kol][rad] == 2) {(*logWalls)[kol][rad]++; rad++;  }
-    globTest++;
     tempCoords.push_back(kol);
     tempCoords.push_back(rad);
     //relativeCoords.push_back(1.0f);
@@ -249,7 +250,45 @@ std::vector<float> getRelativeCoords(std::vector<int> numPos) {
     std::vector<float>  relativeCoords;
     //create an array with the format for squares
     return relativeCoords;
+
 }
+void getRelativeCoordsJustInt(int y, int x, std::vector<float>* wallPoint) {
+    int currentIndex = walls * 12;
+    float Xshift = float(resize) / (float(width)  * float(spriteSize));
+    float Yshift = float(resize) / (float(height) * float(spriteSize));
+    float tempXs = Xshift * x, tempYs = Yshift * y;
+    if (x == 0 && y == 0) { tempXs = Xshift, tempYs = Yshift; }
+    printf("\nScale X: %f\tY: %f\nRelative X: %f\tY: %f", Xshift, Yshift, tempXs, tempYs);
+    for (int i = 0; i <= 4; i++) {
+        // Coordinate order is:
+        //      Top Left
+        //      Bot Left
+        //      Bot Right
+        //      Top Right
+        switch (i) {
+            case 0:   tempXs -= Xshift / 2; tempYs += Yshift / 2; break;  // Top Left
+
+            case 1:   tempXs -= Xshift / 2; tempYs -= Yshift / 2; break;  // Bot Left
+
+            case 2:   tempXs += Xshift / 2; tempYs -= Yshift / 2; break;  // Bot Right
+
+            case 3:   tempXs += Xshift / 2; tempYs += Yshift / 2; break;  // Top Right
+        }
+
+
+        (*wallPoint)[currentIndex] = tempXs;    // X
+        currentIndex++;
+        printf("\nX: %f", tempXs);
+        (*wallPoint)[currentIndex] = tempYs;    // Y
+        currentIndex++;
+        printf("\tY: %f", tempYs);
+        (*wallPoint)[currentIndex] = 0;         // Z
+        currentIndex++;
+        printf("\tZ: %i", 0);
+        tempXs = Xshift*x;
+        tempYs = Yshift*y;
+    }
+};
 
 
 // -----------------------------------------------------------------------------
@@ -349,6 +388,38 @@ GLuint CreateSquare()
 }
 
 // -----------------------------------------------------------------------------
+//  CREATE map
+// -----------------------------------------------------------------------------
+GLuint CreateMap()
+{
+    GLuint map_indices[6] = { 0,1,2,0,2,3 };
+
+    GLuint vao;
+    glCreateVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    GLuint vbo;
+    glGenBuffers(1, &vbo);
+
+    GLuint ebo;
+    glGenBuffers(1, &ebo);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER,
+        sizeof(map),
+        map,
+        GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, (const void*)0);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(map_indices), map_indices, GL_STATIC_DRAW);
+
+    return vao;
+}
+
+// -----------------------------------------------------------------------------
 // Clean VAO
 // -----------------------------------------------------------------------------
 void CleanVAO(GLuint &vao)
@@ -388,7 +459,7 @@ void Camera(const float time, const GLuint shaderprogram)
 
     //Matrix which helps project our 3D objects onto a 2D image. Not as relevant in 2D projects
     //The numbers here represent the aspect ratio. Since our window is a square, aspect ratio here is 1:1, but this can be changed.
-    glm::mat4 projection = glm::ortho(-1.f, 1.f, -1.f, 1.f);
+    glm::mat4 projection = glm::ortho(0.0f, 0.0f, float(width), float(height));
 
     //Matrix which defines where in the scene our camera is
     //                           Position of camera     Direction camera is looking     Vector pointing upwards
