@@ -1,5 +1,5 @@
-#include "shaders/triangle.h"
 #include "shaders/square.h"
+#include "shaders/map.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -20,8 +20,15 @@
 // -----------------------------------------------------------------------------
 GLuint CompileShader(const std::string& vertexShader,
                      const std::string& fragmentShader);
-GLuint CreateTriangle();
-GLuint CreateSquare();
+
+GLuint CreateMap();
+
+GLuint getIndices(int out, int mid, int in);
+void fillMap();
+
+void Transform(const float, const GLuint);
+
+//void Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader);
 
 void CleanVAO(GLuint &vao);
 
@@ -35,22 +42,43 @@ void GLAPIENTRY MessageCallback(GLenum source,
 
 std::vector<float> findAdjacencies(const int y, const int x, const std::vector<std::vector<int>> levelList, std::vector<std::vector<int>>* logWalls);
 std::vector<float> getRelativeCoords(std::vector<int> numPos);
-void getRelativeCoordsJustInt(int y, int x, std::vector<float>* wallPoint);
+void getRelativeCoordsJustInt(int y, int x);
 // -----------------------------------------------------------------------------
 // Globals
 // -----------------------------------------------------------------------------
-GLfloat map[6];
+
+const int mapSquareNumber = 708;                    // I really wanted to avoid doing this, but due to how you initialize arrays is wierd
+const int mapIndiceNumber = mapSquareNumber * 4;    // this was the best solution for me.
+const int maxMapCoordNumber = mapSquareNumber * 12;
+
+std::vector<float> coords;
 
 int width = 24, height = 24, walls = 0;
 
-GLfloat triangle[3 * 3 * 2] =
+/*
+GLfloat square[4 * 3] =
 {
-  -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-  0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
-  0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f
+  -0.5f, 0.5f, 0.0f,
+  -0.5f, -0.5f, 0.0f,
+  0.5f, -0.5f, 0.0f,
+  0.5f, 0.5f, 0.0f,
 };
-
+*/
 int spriteSize = 64, resize = 3;
+//708 * 12
+GLfloat map[maxMapCoordNumber];
+
+GLuint map_indices[708 * 6];
+
+// -----------------------------------------------------------------------------
+// Templates
+// -----------------------------------------------------------------------------
+
+/**
+*  Gets the size of a vector and its contents in bytes
+*/
+template <typename T>
+int sizeof_v(std::vector<T> v) { return sizeof(std::vector<T>) + sizeof(T) * v.size(); }
 
 // -----------------------------------------------------------------------------
 // ENTRY POINT
@@ -62,7 +90,6 @@ int main()
   std::ifstream inn("../../../../levels/level0");
   if (inn) {
       inn >> width; inn.ignore(1); inn >> height;
-      printf("\nWidth: %i\nHeight: %i\n", width, height);
       std::vector<std::vector<int>> levelVect(height, std::vector<int>(width, 0));
       std::vector<std::vector<int>> wallLog(height, std::vector<int>(width, 0));
       int row = 0, column = 0;
@@ -73,33 +100,27 @@ int main()
           if (row < width) {
               levelVect[column][row] = temp;
               printf("%i ",temp);
-              if (temp == 1) { walls++; }
+              //if (temp == 1) { walls++; }
               row++;
               inn >> temp;
           }
           else { row = 0; column++; printf("\n"); }
       }
       inn.close();
-
-      walls *= 12;                      //Reasizes total number of walls to include all points and XYZ
-      walls += 100;
-      std::vector<float> coords(walls); // 3 numbers per point, and 4 points per square Around 100 walls
-      walls = 0;                        //resets Walls for later usage
       
       for (int i = 0; i < height; i++) {    // creates map
           for (int j = 0; j < width; j++) {
-              if (levelVect[i][j] == 1 && wallLog[i][j] == 0){
+              if (levelVect[i][j] == 1){
                   //findAdjacencies(i, j, levelVect, &wallLog);
-                  getRelativeCoordsJustInt(i, j, &coords);
+                  getRelativeCoordsJustInt(i, j);
                   walls++;
+                  //printf("\n%i\n", walls);
               }
           }
       }
-      //for (int l = 1; l < coords.size(); l++) {if (l % 3 == 0) { printf("\n"); } printf("%f ", coords[l]);};
   }
   else { system("dir"); printf("\n\nBIG PROBLEMO, couldnt find level file\n\n"); }
   
-
   // Initialization of GLFW
   if(!glfwInit())
     {
@@ -116,7 +137,7 @@ int main()
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  auto window = glfwCreateWindow(width*spriteSize/resize, height*spriteSize/resize, "Lab02", nullptr, nullptr);
+  auto window = glfwCreateWindow(width*spriteSize/resize, height*spriteSize/resize, "Pacman", nullptr, nullptr);
   if (window == nullptr)
     {
     std::cerr << "GLFW failed on window creation." << '\n';
@@ -142,70 +163,65 @@ int main()
   glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
   glDebugMessageCallback(MessageCallback, 0);
   glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+  /*
+  auto squareVAO =      CreateSquare();
+  auto squareShaderProgram =    CompileShader(  squareVertexShaderSrc,
+                                                squareFragmentShaderSrc);
+  */
 
-  auto squareVAO = CreateSquare();
-  auto squareShaderProgram = CompileShader(squareVertexShaderSrc,
-                                           squareFragmentShaderSrc);
-
-  auto triangleVAO = CreateTriangle();
-  auto triangleShaderProgram = CompileShader(triangleVertexShaderSrc,
-                                             triangleFragmentShaderSrc);
-
+  auto mapVAO = CreateMap();
+  auto mapShaderProgram = CompileShader(mapVertexShaderSrc,
+                                        mapFragmentShaderSrc);
+  
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-
-  bool alternate = false;
+  
   double currentTime = 0.0;
-  double lastTime = 0.0;
   glfwSetTime(0.0);
-  while(!glfwWindowShouldClose(window))
-    {
+  
+  while(!glfwWindowShouldClose(window)) {
     glfwPollEvents();
 
     // Time management
     currentTime = glfwGetTime();
-    if (currentTime - lastTime > 1.0)
-      {
-      alternate = !alternate;
-      lastTime = currentTime;
-      }
 
     glClear(GL_COLOR_BUFFER_BIT);
-
+    
     // Draw SQUARE
+    /*
     auto greenValue = (sin(currentTime) / 2.0f) + 0.5f;
     auto vertexColorLocation = glGetUniformLocation(squareShaderProgram, "u_Color");
     glUseProgram(squareShaderProgram);
     glBindVertexArray(squareVAO);
     glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void*)0);
-
-    // Draw TRIANGLE
-    auto alternateFlagLocation = glGetUniformLocation(triangleShaderProgram, "u_AlternateFlag");
-    glUseProgram(triangleShaderProgram);
-    glBindVertexArray(triangleVAO);
-    glUniform1ui(alternateFlagLocation, static_cast<unsigned int>(alternate));
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-
+    */
+    
+    // Draw MAP
+    auto mapVertexColorLocation = glGetUniformLocation(mapShaderProgram, "u_Color");
+    glUseProgram(mapShaderProgram);
+    glBindVertexArray(mapVAO);
+    glUniform4f(mapVertexColorLocation, 0.0f, 0.0f, 0.8f, 1.0f);
+    glDrawElements(GL_TRIANGLES, 6*mapSquareNumber, GL_UNSIGNED_INT, (const void*)0);
+    Transform(currentTime, mapShaderProgram);
+    
     glfwSwapBuffers(window);
 
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-      {
-      break;
-      }
-    }
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+      break; }
+  }
 
   glUseProgram(0);
-  glDeleteProgram(triangleShaderProgram);
-  glDeleteProgram(squareShaderProgram);
+  //glDeleteProgram(squareShaderProgram);
+  glDeleteProgram(mapShaderProgram);
 
-  CleanVAO(triangleVAO);
-  CleanVAO(squareVAO);
+  //CleanVAO(squareVAO);
+  CleanVAO(mapVAO);
 
   glfwTerminate();
 
   return EXIT_SUCCESS;
 }
-
+/*
 std::vector<float> findAdjacencies(const int y, const int x, const std::vector<std::vector<int>> levelList, std::vector<std::vector<int>> *logWalls) {
     std::vector<int>    tempCoords;
     int loggedAmmount = 0;
@@ -249,46 +265,74 @@ std::vector<float> findAdjacencies(const int y, const int x, const std::vector<s
 std::vector<float> getRelativeCoords(std::vector<int> numPos) {
     std::vector<float>  relativeCoords;
     //create an array with the format for squares
+    //TO BE REMOVED
     return relativeCoords;
-
 }
-void getRelativeCoordsJustInt(int y, int x, std::vector<float>* wallPoint) {
-    int currentIndex = walls * 12;
-    float Xshift = float(resize) / (float(width)  * float(spriteSize));
-    float Yshift = float(resize) / (float(height) * float(spriteSize));
-    float tempXs = Xshift * x, tempYs = Yshift * y;
-    if (x == 0 && y == 0) { tempXs = Xshift, tempYs = Yshift; }
-    printf("\nScale X: %f\tY: %f\nRelative X: %f\tY: %f", Xshift, Yshift, tempXs, tempYs);
-    for (int i = 0; i <= 4; i++) {
+*/
+void getRelativeCoordsJustInt(int y, int x) {
+    //int current = (walls*12);
+    float Xshift = 2.0f / (float(width));
+    float Yshift = 2.0f / (float(height));
+    float tempXs, tempYs;
+    for (int i = 0; i < 4; i++) {
+        if (x == 0 && y == 0) { tempXs = 0, tempYs = 0; }
+        else {
+            tempXs = (Xshift * x), tempYs = (Yshift * y);
+        }
         // Coordinate order is:
         //      Top Left
         //      Bot Left
         //      Bot Right
         //      Top Right
         switch (i) {
-            case 0:   tempXs -= Xshift / 2; tempYs += Yshift / 2; break;  // Top Left
+            case 0:   tempXs;           tempYs;             break;  // Top Left
 
-            case 1:   tempXs -= Xshift / 2; tempYs -= Yshift / 2; break;  // Bot Left
+            case 1:   tempXs;           tempYs += Yshift;   break;  // Bot Left
 
-            case 2:   tempXs += Xshift / 2; tempYs -= Yshift / 2; break;  // Bot Right
+            case 2:   tempXs += Xshift; tempYs += Yshift;   break;  // Bot Right
 
-            case 3:   tempXs += Xshift / 2; tempYs += Yshift / 2; break;  // Top Right
+            case 3:   tempXs += Xshift; tempYs;             break;  // Top Right
         }
 
 
-        (*wallPoint)[currentIndex] = tempXs;    // X
-        currentIndex++;
-        printf("\nX: %f", tempXs);
-        (*wallPoint)[currentIndex] = tempYs;    // Y
-        currentIndex++;
-        printf("\tY: %f", tempYs);
-        (*wallPoint)[currentIndex] = 0;         // Z
-        currentIndex++;
-        printf("\tZ: %i", 0);
-        tempXs = Xshift*x;
-        tempYs = Yshift*y;
+        coords.push_back((tempXs -= 1.0f));
+        coords.push_back((tempYs -= 1.0f));
+        coords.push_back(0);
+        //printf("\nX: %f\tY: %f",tempXs, tempYs);
     }
 };
+
+// -----------------------------------------------------------------------------
+// Code handling the transformation of objects in the Scene
+// -----------------------------------------------------------------------------
+void Transform(const float time, const GLuint shaderprogram)
+{
+
+    //Presentation below purely for ease of viewing individual components of calculation, and not at all necessary.
+
+    //Translation moves our object.        base matrix      Vector for movement along each axis
+    //glm::mat4 translation = glm::translate(glm::mat4(1), glm::vec3(sin(time), 0.f, 0.f));
+
+    //Rotate the object                    base matrix      degrees to rotate          axis to rotate around
+    float pi = glm::pi<float>();
+    glm::mat4 rotation = glm::rotate(glm::mat4(1), pi, glm::vec3(0, 0, 1));
+
+    //Scale the object                     base matrix      vector containing how much to scale along each axis (here the same for all axis)
+    //glm::mat4 scale = glm::scale(glm::mat4(1), glm::vec3(sin(time)));
+
+    //Create transformation matrix      These must be multiplied in this order, or the results will be incorrect
+    //glm::mat4 transformation = translation * rotation * scale;
+    glm::mat4 transformation = rotation;
+
+
+    //Get uniform to place transformation matrix in
+    //Must be called after calling glUseProgram         shader program in use   Name of Uniform
+    GLuint transformationmat = glGetUniformLocation(shaderprogram, "u_TransformationMat");
+
+    //Send data from matrices to uniform
+    //                 Location of uniform  How many matrices we are sending    value_ptr to our transformation matrix
+    glUniformMatrix4fv(transformationmat, 1, false, glm::value_ptr(transformation));
+}
 
 
 // -----------------------------------------------------------------------------
@@ -321,44 +365,12 @@ GLuint CompileShader(const std::string& vertexShaderSrc,
 
   return shaderProgram;
 }
-
-// -----------------------------------------------------------------------------
-//  CREATE TRIANGLE
-// -----------------------------------------------------------------------------
-GLuint CreateTriangle()
-{
-
-  GLuint vao;
-  glCreateVertexArrays(1, &vao);
-  glBindVertexArray(vao);
-
-  GLuint vbo;
-  glGenBuffers(1, &vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(triangle), triangle, GL_STATIC_DRAW);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*6, (const void*)0);
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*6, (const void*)12);
-   
-  GLfloat alternateColor[4] = {0.0f, 0.0f, 1.0f, 1.0f};
-  glVertexAttrib4fv(2, alternateColor);
-
-  return vao;
-}
-
+/*
 // -----------------------------------------------------------------------------
 //  CREATE SQUARE
 // -----------------------------------------------------------------------------
 GLuint CreateSquare()
 {
-  GLfloat square[4*3] =
-    {
-      -0.5f, 0.5f, 0.0f,
-      -0.5f, -0.5f, 0.0f,
-      0.5f, -0.5f, 0.0f,
-      0.5f, 0.5f, 0.0f,
-    };
 
   GLuint square_indices[6] = {0,1,2,0,2,3};
 
@@ -379,20 +391,30 @@ GLuint CreateSquare()
                 GL_STATIC_DRAW);
 
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*3, (const void *)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, (const void*)0);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(square_indices), square_indices, GL_STATIC_DRAW);
 
   return vao;
 }
+*/
 
 // -----------------------------------------------------------------------------
-//  CREATE map
+//  CREATE MAP
 // -----------------------------------------------------------------------------
-GLuint CreateMap()
-{
-    GLuint map_indices[6] = { 0,1,2,0,2,3 };
+GLuint CreateMap() {
+    int counter = 0;
+    for (int i = 0; i < mapIndiceNumber; i += 4) {
+        for (int o = 0; o < 2; o++) {
+            for (int p = i; p < (i + 3); p++) {
+                map_indices[counter] = getIndices(i, o, p);
+                counter++;
+            }
+        }
+    };
+
+    fillMap();
 
     GLuint vao;
     glCreateVertexArrays(1, &vao);
@@ -409,14 +431,29 @@ GLuint CreateMap()
         sizeof(map),
         map,
         GL_STATIC_DRAW);
-
+       
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, (const void*)0);
-
+    
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(map_indices), map_indices, GL_STATIC_DRAW);
 
     return vao;
+}
+
+// -----------------------------------------------------------------------------
+// Small Functions
+// -----------------------------------------------------------------------------
+
+GLuint getIndices(int out, int mid, int in) {
+    if (in == out) { return out; }
+    else { return (mid + in); };
+}
+
+void fillMap() {
+    for (int test = 0; test < maxMapCoordNumber; test++) {
+        map[test] = coords[test];
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -456,7 +493,7 @@ void CleanVAO(GLuint &vao)
 
 void Camera(const float time, const GLuint shaderprogram)
 {
-
+    //glOrtho(0.0f, 0.0f, float(width), float(height),1,100);
     //Matrix which helps project our 3D objects onto a 2D image. Not as relevant in 2D projects
     //The numbers here represent the aspect ratio. Since our window is a square, aspect ratio here is 1:1, but this can be changed.
     glm::mat4 projection = glm::ortho(0.0f, 0.0f, float(width), float(height));
@@ -473,6 +510,8 @@ void Camera(const float time, const GLuint shaderprogram)
     glUniformMatrix4fv(projmat, 1, false, glm::value_ptr(projection));
     glUniformMatrix4fv(viewmat, 1, false, glm::value_ptr(view));
 }
+
+
 
 // -----------------------------------------------------------------------------
 // MessageCallback (for debugging purposes)
