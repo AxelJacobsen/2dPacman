@@ -123,7 +123,7 @@ class Pellets {
 };
 
 //Inital definition
-Character Pacman[1];
+std::vector<Character*> Pacman;
 Character Ghosts[4];
 Pellets pellets[28 * 34]; // set to maximum number of "slots"
 
@@ -215,10 +215,10 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 {
     //if (prevDir != playerDir) { prevDir = playerDir; 
     switch (key) {
-    case GLFW_KEY_UP:           if (Pacman[0].getLegalDir(2)) playerDir = 2;   break;
-    case GLFW_KEY_DOWN:         if (Pacman[0].getLegalDir(4)) playerDir = 4;   break;
-    case GLFW_KEY_LEFT:         if (Pacman[0].getLegalDir(3)) playerDir = 3;   break;
-    case GLFW_KEY_RIGHT:        if (Pacman[0].getLegalDir(9)) playerDir = 9;   break;
+    case GLFW_KEY_UP:           if (Pacman[0]->getLegalDir(2)) playerDir = 2;   break;
+    case GLFW_KEY_DOWN:         if (Pacman[0]->getLegalDir(4)) playerDir = 4;   break;
+    case GLFW_KEY_LEFT:         if (Pacman[0]->getLegalDir(3)) playerDir = 3;   break;
+    case GLFW_KEY_RIGHT:        if (Pacman[0]->getLegalDir(9)) playerDir = 9;   break;
     }
     changeDir();
     //};
@@ -229,8 +229,6 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 // -----------------------------------------------------------------------------
 int main()
 {
-    
-  Character Pacman[1];
   // Read from level file;
   std::vector<std::vector<int>>levelVect = loadFromFile();
 
@@ -283,8 +281,8 @@ int main()
   glDebugMessageCallback(MessageCallback, 0);
   glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
         
-  auto playerVAO = Pacman[0].initVao();
-  Pacman[0].testFunk();
+  auto playerVAO = Pacman[0]->initVao();
+  Pacman[0]->testFunk();
   auto playerShaderProgram =    CompileShader(  playerVertexShaderSrc,
                                                 playerFragmentShaderSrc);
 
@@ -316,7 +314,7 @@ int main()
     glBindVertexArray(playerVAO);
     glUniform4f(vertexColorLocation, 1.0f, 1.0f, 0.0f, 1.0f);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void*)0);
-    Pacman[0].Transform(playerShaderProgram);
+    Pacman[0]->Transform(playerShaderProgram);
     //TransformPlayer(playerShaderProgram);
 
     if (lerpProg >= 1 || lerpProg <= 0) { changeDir(); }
@@ -545,9 +543,8 @@ void callMapCoordinateCreation(std::vector<std::vector<int>> levelVect) {
                 }
             }
             else if (levelVect[i][j] == 2) {
-                Character pacman(j, i);
-                Pacman[0] = pacman;
-                pacman.testFunk();
+                Pacman.push_back(new Character(j, i));
+                Pacman[0]->testFunk();
             }
         }
     }
