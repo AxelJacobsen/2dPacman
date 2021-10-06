@@ -25,6 +25,8 @@ GLuint CreatePlayer();
 
 GLuint getIndices(int out, int mid, int in);
 
+void Camera(const GLuint shaderprogram);
+
 void fillMap();
 void callMapCoordinateCreation(std::vector<std::vector<int>> levelVect);
 
@@ -71,9 +73,7 @@ const int spriteSize = 64, resize = 3;
 
 int mockMap[spriteSize*2][spriteSize*2];        //A soft max for map sizes
 
-int playerDir = 9, prevDir = 1; //set to 1 to avoid intDiv by 0
-
-float hastighet = 1.0f / 500.0f;
+int playerDir = 9, prevDir = playerDir; //set to 1 to avoid intDiv by 0
 
 GLfloat map[maxMapCoordNumber];
 
@@ -83,7 +83,7 @@ GLuint map_indices[708 * 6];
 
 float pi = glm::pi<float>();
 
-float lerpStep = 1.0f / 200.0f;
+float lerpStep = 1.0f / 500.0f;
 float lerpProg = lerpStep;
 float lerpStart[2], lerpStop[2], playerPos[2];
 float Xshift, Yshift;
@@ -125,7 +125,7 @@ int main()
 
   // Creates coordinates for map
   callMapCoordinateCreation(levelVect);
-  
+
   // Initialization of GLFW
   if(!glfwInit())
     {
@@ -155,7 +155,7 @@ int main()
 
     return EXIT_FAILURE;
     }
-  
+
   // Setting the OpenGL context.
   glfwMakeContextCurrent(window);
 
@@ -171,18 +171,18 @@ int main()
   glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
   glDebugMessageCallback(MessageCallback, 0);
   glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-  
+
   auto playerVAO =              CreatePlayer();
   auto playerShaderProgram =    CompileShader(  playerVertexShaderSrc,
                                                 playerFragmentShaderSrc);
-  
+
 
   auto mapVAO =                 CreateMap();
   auto mapShaderProgram =       CompileShader(  mapVertexShaderSrc,
                                                 mapFragmentShaderSrc);
-  
+
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-  
+
   double currentTime = 0.0;
   glfwSetTime(0.0);
 
@@ -193,15 +193,16 @@ int main()
     currentTime = glfwGetTime();
 
     glClear(GL_COLOR_BUFFER_BIT);
-    
+
     // Draw MAP
     auto mapVertexColorLocation = glGetUniformLocation(mapShaderProgram, "u_Color");
     glUseProgram(mapShaderProgram);
     glBindVertexArray(mapVAO);
     glUniform4f(mapVertexColorLocation, 0.1f, 0.0f, 0.6f, 1.0f);
     glDrawElements(GL_TRIANGLES, 6*mapSquareNumber, GL_UNSIGNED_INT, (const void*)0);
-    TransformMap(mapShaderProgram);
-    
+    //Camera(mapShaderProgram);
+    //TransformMap(mapShaderProgram);
+
     // Draw Player
 
     //auto playerVAO = CreatePlayer();
@@ -214,10 +215,11 @@ int main()
     glUniform4f(vertexColorLocation, 1.0f, 1.0f, 0.0f, 1.0f);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void*)0);
     TransformPlayer(playerShaderProgram);
+    //Camera(playerShaderProgram);
 
     if (lerpProg >= 1 || lerpProg <= 0) { changeDir(); }
     else { lerpProg += lerpStep; }
-    
+
     glfwSwapBuffers(window);
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -264,7 +266,7 @@ void getRelativeCoordsJustInt(int y, int x, int type) {
             case 3:   tempXs += Xshift; tempYs;             break;  // Top Right
         }
 
-        if (type == 1){
+        if (type == 1) {
             coords.push_back((tempXs -= 1.0f));
             coords.push_back((tempYs -= 1.0f));
             coords.push_back(0);
@@ -278,7 +280,7 @@ void getRelativeCoordsJustInt(int y, int x, int type) {
             printf("\npX: %f", player[twoCounter]);
             twoCounter++;
 
-            player[twoCounter] = ((tempYs - 1.0f)+ Yshift);
+            player[twoCounter] = ((tempYs - 1.0f));
             lerpStart[1] = player[twoCounter];
             lerpStop[1] = lerpStart[1];
             printf("\tpY: %f", player[twoCounter]);
@@ -314,11 +316,12 @@ void TransformPlayer(const GLuint shaderprogram)
     //Translation moves our object.        base matrix      Vector for movement along each axis
     glm::mat4 translation;
     translation = glm::translate(glm::mat4(1), glm::vec3((((1 - lerpProg) * lerpStart[0]) + (lerpProg * lerpStop[0])),
-                                                         (((1 - lerpProg) * lerpStart[1]) + (lerpProg * lerpStop[1])), 
+                                                         (((1 - lerpProg) * lerpStart[1]) + (lerpProg * lerpStop[1])),
                                                             0.f));//LERP
 
-    printf("\nX: %f", (((1 - lerpProg) * lerpStart[0]) + (lerpProg * lerpStop[0])));
-    printf("\tY: %f", (((1 - lerpProg) * lerpStart[1]) + (lerpProg * lerpStop[1])));
+    //printf("\nX: %f", (((1 - lerpProg) * lerpStart[0]) + (lerpProg * lerpStop[0])));
+    //printf("\tY: %f", (((1 - lerpProg) * lerpStart[1]) + (lerpProg * lerpStop[1])));
+    //printf("\nX: %f\tY: %f", lerpStop[0], lerpStop[1]);
 
     //translation = glm::translate(glm::mat4(1), glm::vec3(1.0f, 0.f, 0.f));                 //STILL
 
@@ -336,14 +339,14 @@ void TransformPlayer(const GLuint shaderprogram)
     //Get uniform to place transformation matrix in
     //Must be called after calling glUseProgram         shader program in use   Name of Uniform
     GLuint transformationmat = glGetUniformLocation(shaderprogram, "u_TransformationMat");
-    
+
     //updatePlayerArr(translation);
 
     //Send data from matrices to uniform
     //                 Location of uniform  How many matrices we are sending    value_ptr to our transformation matrix
     glUniformMatrix4fv(transformationmat, 1, false, glm::value_ptr(transformation));
 }
-    
+
 // -----------------------------------------------------------------------------
 // COMPILE SHADER
 // -----------------------------------------------------------------------------
@@ -440,10 +443,10 @@ GLuint CreateMap() {
         sizeof(map),
         map,
         GL_STATIC_DRAW);
-       
+
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, (const void*)0);
-    
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(map_indices), map_indices, GL_STATIC_DRAW);
 
@@ -477,8 +480,8 @@ std::vector<std::vector<int>> loadFromFile() {
         printf("\n");
         while (column < height) { // adds "walls" int vector
             if (row < width) {
-                tempMapVect[column][row] = temp;
-                mockMap[column][row] = temp;
+                tempMapVect[(height - 1 - column)][row] = temp;
+                mockMap[(height - 1 - column)][row] = temp;
                 printf("%i ", temp);
                 row++;
                 inn >> temp;
@@ -505,7 +508,7 @@ void callMapCoordinateCreation(std::vector<std::vector<int>> levelVect) {
 }
 
 void updatePlayerArr(glm::mat4 translation) {
-    if (playerDir >= 0) {      
+    if (playerDir >= 0) {
         glm::mat4 playMat;
         int cringe = 0;
         for (int i = 0; i < 4; i++) {
@@ -532,9 +535,9 @@ bool getLegalDir() {
 
     int testPos[2] = {playerXY[0], playerXY[1]};
     switch (playerDir) {
-        case 2: testPos[1] -= 1; break;      //UP test
-        case 4: testPos[1] += 1; break;      //DOWN test
-        case 3: testPos[0] -= 1; break;      //LEFT test 
+        case 2: testPos[1] += 1; break;      //UP test
+        case 4: testPos[1] -= 1; break;      //DOWN test
+        case 3: testPos[0] -= 1; break;      //LEFT test
         case 9: testPos[0] += 1; break;      //RIGHT test
     }
 
@@ -547,30 +550,36 @@ bool getLegalDir() {
 
 void getLerpCoords() {
     switch (playerDir) {
-        case 2: playerXY[1] -= 1; break;      //UP
-        case 4: playerXY[1] += 1; break;      //DOWN
-        case 3: playerXY[0] -= 1; break;      //LEFT
-        case 9: playerXY[0] += 1; break;      //RIGHT
+        case 2: playerXY[1] += 1; printf("\nMOVE UP\n"); break;        //UP
+        case 4: playerXY[1] -= 1; printf("\nMOVE DOWN\n"); break;      //DOWN
+        case 3: playerXY[0] -= 1; printf("\nMOVE LEFT\n"); break;      //LEFT
+        case 9: playerXY[0] += 1; printf("\nMOVE RIGHT\n"); break;     //RIGHT
     }
+    //printf("\nPRETRANS X: %f\tPRETRANS Y: %f", lerpStop[0], lerpStop[1]);
+    //printf("\Xshift: %f\tYshift: %f", Xshift, Yshift);
     lerpStop[0] = (playerXY[0] * Xshift);
-    lerpStop[1] = (playerXY[1] * Yshift);
+    lerpStop[1] = ((playerXY[1] * Yshift)-1);
+    //printf("\nX: %i\tY: %i", playerXY[0], playerXY[1]);
+
 }
 
 void changeDir() {
-    
+    //printf("\nCHANGEDIR %f", lerpProg);
     if (getLegalDir() && playerDir % prevDir == 0 && playerDir != prevDir) {
+        //printf("\nCurrentDir: %i,\nPrevoisDir: %i\n", playerDir, prevDir);
         float coordHolder[2];
         for (int i = 0; i < 2; i++) {
             coordHolder[i]  = lerpStop[i];
             lerpStop[i]     = lerpStart[i];
             lerpStart[i]    = coordHolder[i];
         }
-        lerpProg = (1 - lerpProg);
+        lerpProg = (lerpProg - 1);
     }
     else if (getLegalDir() && (lerpProg <= 0 || lerpProg >= 1)) {
         lerpStart[0] = lerpStop[0];
         lerpStart[1] = lerpStop[1];
         getLerpCoords();
+        lerpProg = 0;
         lerpProg = lerpStep / 2;
     }
 }
@@ -611,9 +620,8 @@ void CleanVAO(GLuint &vao)
   glDeleteVertexArrays(1, &vao);
 }
 
-void Camera(const float time, const GLuint shaderprogram)
+void Camera(const GLuint shaderprogram)
 {
-    //glOrtho(0.0f, 0.0f, float(width), float(height),1,100);
     //Matrix which helps project our 3D objects onto a 2D image. Not as relevant in 2D projects
     //The numbers here represent the aspect ratio. Since our window is a square, aspect ratio here is 1:1, but this can be changed.
     glm::mat4 projection = glm::ortho(0.0f, 0.0f, float(width), float(height));
