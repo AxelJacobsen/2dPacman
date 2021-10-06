@@ -21,25 +21,23 @@ GLuint CompileShader(const std::string& vertexShader,
                      const std::string& fragmentShader);
 
 GLuint CreateMap();
-GLuint CreatePlayer();
+GLuint CreateObject(GLfloat object[12]);
 
 GLuint getIndices(int out, int mid, int in);
-
-void Camera(const GLuint shaderprogram);
 
 void fillMap();
 void callMapCoordinateCreation(std::vector<std::vector<int>> levelVect);
 
 void TransformMap(const GLuint);
-void TransformPlayer(const GLuint);
-
-void updatePlayerArr(glm::mat4 translation);
+void TransformPlayer(const GLuint, float lerpProg, float lerpStart[], float lerpStop[]);
 
 void getLerpCoords();
 
 void changeDir();
 
-bool getLegalDir();
+bool getLegalDir(const int dir);
+
+GLfloat getCoordsWithInt(int y, int x, int type);
 
 std::vector<std::vector<int>> loadFromFile();
 
@@ -55,7 +53,6 @@ void GLAPIENTRY MessageCallback(GLenum source,
                                 const GLchar* message,
                                 const void* userParam);
 
-void getRelativeCoordsJustInt(int y, int x, int type);
 
 // -----------------------------------------------------------------------------
 // Globals
@@ -71,9 +68,9 @@ int width = 24, height = 24, walls = 0;
 
 const int spriteSize = 64, resize = 3;
 
-int mockMap[spriteSize*2][spriteSize*2];        //A soft max for map sizes
+int wallMap[spriteSize*2][spriteSize*2];        //A soft max for map sizes
 
-int playerDir = 9, prevDir = playerDir; //set to 1 to avoid intDiv by 0
+int playerDir = 9, prevDir = 1; //set to 1 to avoid intDiv by 0
 
 GLfloat map[maxMapCoordNumber];
 
@@ -83,43 +80,157 @@ GLuint map_indices[708 * 6];
 
 float pi = glm::pi<float>();
 
-float lerpStep = 1.0f / 500.0f;
+float lerpStep = 1.0f / 20.0f;
 float lerpProg = lerpStep;
 float lerpStart[2], lerpStop[2], playerPos[2];
 float Xshift, Yshift;
 
 int playerXY[2];
+
 // -----------------------------------------------------------------------------
-// Templates
+// Classes
 // -----------------------------------------------------------------------------
 
-/**
-*  Gets the size of a vector and its contents in bytes
-*/
-template <typename T>
-int sizeof_v(std::vector<T> v) { return sizeof(std::vector<T>) + sizeof(T) * v.size(); }
+class Character {
+    private:
+        float lerpPos[2] = { 0 }, lerpStart[2], lerpsStop[2];
+        float lerpProg = lerpStep;
+        int dir = 9, prevDir = 1, XYpos[2] = {0};
+        GLfloat vertices[4 * 3] = { 0 };
+        bool AI = false;
+    public: 
+        Character() { printf("\nPACMAN OBJECT CREATED\n"); };
+        void initAI();
+        Character(int x, int y);
+        void characterInit();
+        void convertToVert();
+        auto initVao();
+        bool getLegalDir(int dir);
+        void getLerpCoords();
+        void changeDir();
+        void Transform(const GLuint ShaderProgram);
+        void testFunk();
+};
+
+class Pellets {
+    private:
+        int XYpos[2];
+        bool enabled = true;
+        GLfloat vertices[4 * 3] = { 0 };
+    public:
+        Pellets() {};
+        Pellets(int x, int y);
+};
+
+//Inital definition
+Character Pacman[1];
+Character Ghosts[4];
+Pellets pellets[28 * 34]; // set to maximum number of "slots"
+
+
+// -----------------------------------------------------------------------------
+// Class function definition
+// -----------------------------------------------------------------------------
+
+void Character::initAI() {
+    AI = true;
+    characterInit();
+    printf("\n\nWrong one\n\n");
+};
+
+Character::Character(int x, int y) {
+    XYpos[0] = x, XYpos[1] = y;
+    printf("\n\nRight one Xpos, %i, Ypos, %i\n\n", XYpos[0], XYpos[1]);
+    characterInit();
+};
+
+void Character::characterInit() {
+    convertToVert();
+    GLfloat temp = getCoordsWithInt(XYpos[1], XYpos[0], 9);
+    
+    lerpStart[0] = (temp - Xshift); lerpsStop[0] = temp;
+    printf("\nlerpStartx: %f\tlerpStopx: %f", lerpStart[0], temp);
+    lerpStart[1] = (vertices[10]);     lerpsStop[1] = lerpStart[1];
+    printf("\nlerpStartY: %f\tlerpStopY: %f\n", lerpStart[1], lerpsStop[1]);
+};
+
+void Character::convertToVert() {
+    int loop = 0;
+    for (int y = 0; y < 4; y++) {
+        printf("\n");
+        for (int x = 0; x < 3; x++) {
+            vertices[loop] = (getCoordsWithInt(y, x, loop));
+            if (x == 1) { vertices[loop]+= 1; }
+            printf("%f ", vertices[loop]);
+            loop++;
+        }
+    }
+};
+
+auto Character::initVao() {
+    return CreateObject(vertices);
+};
+
+void Character::testFunk() { printf("CORRECT, Xpos %i, Ypos: %i\n"), XYpos[0], XYpos[1]; }
+
+bool Character::getLegalDir(int dir) {
+    if (0 < lerpProg && lerpProg < 1) { return true; }
+
+    int testPos[2] = { playerXY[0], playerXY[1] };
+    switch (dir) {
+    case 2: testPos[1] += 1; break;      //UP test
+    case 4: testPos[1] -= 1; break;      //DOWN test
+    case 3: testPos[0] -= 1; break;      //LEFT test
+    case 9: testPos[0] += 1; break;      //RIGHT test
+    }
+
+    if ((testPos[0] < width && testPos[1] < height) && (0 <= testPos[0] && 0 <= testPos[1])) {
+        if (wallMap[testPos[1]][testPos[0]] != 1) { return true; }
+        else { return false; }
+    }
+    else { return false; }    //incase moving outside map illegal untill further notice
+    return false;
+};
+
+void Character::getLerpCoords() {
+
+};
+
+void Character::changeDir() {
+
+};
+
+void Character::Transform(const GLuint ShaderProgram) {
+    TransformPlayer(ShaderProgram, lerpProg, lerpStart, lerpStop);
+};
+
+Pellets::Pellets(int x, int y) {
+    XYpos[0] = x; XYpos[1] = y;
+};
 
 // -----------------------------------------------------------------------------
 // Key Callsback
 // -----------------------------------------------------------------------------
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    prevDir = playerDir;
+    //if (prevDir != playerDir) { prevDir = playerDir; 
     switch (key) {
-        case GLFW_KEY_UP:           playerDir = 2;   break;
-        case GLFW_KEY_DOWN:         playerDir = 4;   break;
-        case GLFW_KEY_LEFT:         playerDir = 3;   break;
-        case GLFW_KEY_RIGHT:        playerDir = 9;   break;
+    case GLFW_KEY_UP:           if (Pacman[0].getLegalDir(2)) playerDir = 2;   break;
+    case GLFW_KEY_DOWN:         if (Pacman[0].getLegalDir(4)) playerDir = 4;   break;
+    case GLFW_KEY_LEFT:         if (Pacman[0].getLegalDir(3)) playerDir = 3;   break;
+    case GLFW_KEY_RIGHT:        if (Pacman[0].getLegalDir(9)) playerDir = 9;   break;
     }
     changeDir();
+    //};
 }
-
 
 // -----------------------------------------------------------------------------
 // ENTRY POINT
 // -----------------------------------------------------------------------------
 int main()
 {
+    
+  Character Pacman[1];
   // Read from level file;
   std::vector<std::vector<int>>levelVect = loadFromFile();
 
@@ -171,25 +282,24 @@ int main()
   glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
   glDebugMessageCallback(MessageCallback, 0);
   glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-
-  auto playerVAO =              CreatePlayer();
+        
+  auto playerVAO = Pacman[0].initVao();
+  Pacman[0].testFunk();
   auto playerShaderProgram =    CompileShader(  playerVertexShaderSrc,
                                                 playerFragmentShaderSrc);
-
 
   auto mapVAO =                 CreateMap();
   auto mapShaderProgram =       CompileShader(  mapVertexShaderSrc,
                                                 mapFragmentShaderSrc);
-
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-  double currentTime = 0.0;
+  double currentTime = 0.0, prevTime = currentTime;
   glfwSetTime(0.0);
 
   while(!glfwWindowShouldClose(window)) {
     glfwPollEvents();
-
     // Time management
+    prevTime = currentTime;
     currentTime = glfwGetTime();
 
     glClear(GL_COLOR_BUFFER_BIT);
@@ -200,33 +310,23 @@ int main()
     glBindVertexArray(mapVAO);
     glUniform4f(mapVertexColorLocation, 0.1f, 0.0f, 0.6f, 1.0f);
     glDrawElements(GL_TRIANGLES, 6*mapSquareNumber, GL_UNSIGNED_INT, (const void*)0);
-    //Camera(mapShaderProgram);
-    //TransformMap(mapShaderProgram);
-
-    // Draw Player
-
-    //auto playerVAO = CreatePlayer();
-    //auto playerShaderProgram = CompileShader(   playerVertexShaderSrc,
-    //                                            playerFragmentShaderSrc);
 
     auto vertexColorLocation = glGetUniformLocation(playerShaderProgram, "u_Color");
     glUseProgram(playerShaderProgram);
     glBindVertexArray(playerVAO);
     glUniform4f(vertexColorLocation, 1.0f, 1.0f, 0.0f, 1.0f);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void*)0);
-    TransformPlayer(playerShaderProgram);
-    //Camera(playerShaderProgram);
+    Pacman[0].Transform(playerShaderProgram);
+    //TransformPlayer(playerShaderProgram);
 
     if (lerpProg >= 1 || lerpProg <= 0) { changeDir(); }
-    else { lerpProg += lerpStep; }
+    else if (prevTime != currentTime) { printf("\n %i", int(currentTime*100)); lerpProg += lerpStep; }
 
     glfwSwapBuffers(window);
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
       break; }
 
-    //glDeleteProgram(playerShaderProgram);
-    //CleanVAO(playerVAO);
   }
 
   glUseProgram(0);
@@ -241,110 +341,46 @@ int main()
   return EXIT_SUCCESS;
 }
 
-void getRelativeCoordsJustInt(int y, int x, int type) {
-    int twoCounter = 0;
+GLfloat getCoordsWithInt(int y, int x, int loop) {
     Xshift = 2.0f / (float(width));
     Yshift = 2.0f / (float(height));
-    float tempXs, tempYs;
-    for (int i = 0; i < 4; i++) {
-        if (x == 0 && y == 0) { tempXs = 0, tempYs = 0; }
-        else {
-            tempXs = (Xshift * x), tempYs = (Yshift * y);
-        }
-        // Coordinate order is:
-        //      Top Left
-        //      Bot Left
-        //      Bot Right
-        //      Top Right
-        switch (i) {
-            case 0:   tempXs;           tempYs;             break;  // Top Left
+    GLfloat tempXs, tempYs;
+    if (x == 0 && y == 0) { tempXs = 0, tempYs = 0; }
+    else { tempXs = (Xshift * x), tempYs = (Yshift * y);}
 
-            case 1:   tempXs;           tempYs += Yshift;   break;  // Bot Left
+    switch (loop) {
+    case 0:   tempXs;             return (tempXs - 1);  // Top Left
+    case 1:   tempYs;             return (tempYs - 1);  // Top Left
 
-            case 2:   tempXs += Xshift; tempYs += Yshift;   break;  // Bot Right
+    case 3:   tempXs;             return (tempXs - 1);  // Bot Left
+    case 4:   tempYs += Yshift;   return (tempYs - 1);  // Bot Left
 
-            case 3:   tempXs += Xshift; tempYs;             break;  // Top Right
-        }
+    case 6:   tempXs += Xshift;   return (tempXs - 1);  // Bot Right
+    case 7:   tempYs += Yshift;   return (tempYs - 1);  // Bot Right
 
-        if (type == 1) {
-            coords.push_back((tempXs -= 1.0f));
-            coords.push_back((tempYs -= 1.0f));
-            coords.push_back(0);
-        }
-        else if ( type == 2 ) {
-            playerXY[0] = (x-1), playerXY[1] = y;
-
-            player[twoCounter] = (tempXs - 1.0f);
-            lerpStart[0] = (tempXs-Xshift);
-            lerpStop[0] = (tempXs);
-            printf("\npX: %f", player[twoCounter]);
-            twoCounter++;
-
-            player[twoCounter] = ((tempYs - 1.0f));
-            lerpStart[1] = player[twoCounter];
-            lerpStop[1] = lerpStart[1];
-            printf("\tpY: %f", player[twoCounter]);
-            twoCounter++;
-
-            player[twoCounter] = 0;
-            printf("\tpZ: %f", player[twoCounter]);
-            twoCounter++;
-        }
-        //printf("\nX: %f\tY: %f",tempXs, tempYs);
+    case 9:   tempXs += Xshift;   return (tempXs - 1);  // Top Right
+    case 10:  tempYs;             return (tempYs - 1);  // Top Right
+    default: return 0.0f;
     }
 };
 
-// -----------------------------------------------------------------------------
-// Code handling the transformation of objects in the Scene
-// -----------------------------------------------------------------------------
-void TransformMap(const GLuint shaderprogram)
-{
-    glm::mat4 rotation = glm::rotate(glm::mat4(1), pi, glm::vec3(0, 0, 1));
 
-    glm::mat4 transformation = rotation;
-
-    GLuint transformationmat = glGetUniformLocation(shaderprogram, "u_TransformationMat");
-
-    glUniformMatrix4fv(transformationmat, 1, false, glm::value_ptr(transformation));
-}
-
-void TransformPlayer(const GLuint shaderprogram)
+void TransformPlayer(const GLuint shaderprogram, float lerpProg, float lerpStart[], float lerpStop[])
 {
 
     //Presentation below purely for ease of viewing individual components of calculation, and not at all necessary.
 
-    //Translation moves our object.        base matrix      Vector for movement along each axis
-    glm::mat4 translation;
-    translation = glm::translate(glm::mat4(1), glm::vec3((((1 - lerpProg) * lerpStart[0]) + (lerpProg * lerpStop[0])),
-                                                         (((1 - lerpProg) * lerpStart[1]) + (lerpProg * lerpStop[1])),
-                                                            0.f));//LERP
+    glm::mat4 translation = glm::translate(glm::mat4(1), glm::vec3(
+                                                        (((1 - lerpProg) * lerpStart[0]) + (lerpProg * lerpStop[0])),
+                                                        (((1 - lerpProg) * lerpStart[1]) + (lerpProg * lerpStop[1])),
+                                                            0.f));
+    //printf("\nProg: %f, StartX: %f, StartY: %f, StopX: %f, StopY: %f\n", lerpProg, lerpStart[0], lerpStart[1], lerpStop[0], lerpStop[1]);
+   
 
-    //printf("\nX: %f", (((1 - lerpProg) * lerpStart[0]) + (lerpProg * lerpStop[0])));
-    //printf("\tY: %f", (((1 - lerpProg) * lerpStart[1]) + (lerpProg * lerpStop[1])));
-    //printf("\nX: %f\tY: %f", lerpStop[0], lerpStop[1]);
-
-    //translation = glm::translate(glm::mat4(1), glm::vec3(1.0f, 0.f, 0.f));                 //STILL
-
-    /*
-    switch (playerDir) {
-        case 2:  translation = glm::translate(glm::mat4(1), glm::vec3(0.f, hastighet, 0.f));  break;    //UP
-        case 4:  translation = glm::translate(glm::mat4(1), glm::vec3(0.f, -hastighet, 0.f)); break;    //DOWN
-        case 3:  translation = glm::translate(glm::mat4(1), glm::vec3(-hastighet, 0.f, 0.f));  break;   //LEFT
-        case 9:  translation = glm::translate(glm::mat4(1), glm::vec3(hastighet, 0.f, 0.f)); break;     //RIGHT
-        default: translation = glm::translate(glm::mat4(1), glm::vec3(0.0f, 0.f, 0.f));                 //STILL
-    }
-    */
-    //Create transformation matrix      These must be multiplied in this order, or the results will be incorrect
-    glm::mat4 transformation = translation;
-    //Get uniform to place transformation matrix in
-    //Must be called after calling glUseProgram         shader program in use   Name of Uniform
     GLuint transformationmat = glGetUniformLocation(shaderprogram, "u_TransformationMat");
 
-    //updatePlayerArr(translation);
+    glUniformMatrix4fv(transformationmat, 1, false, glm::value_ptr(translation));
 
-    //Send data from matrices to uniform
-    //                 Location of uniform  How many matrices we are sending    value_ptr to our transformation matrix
-    glUniformMatrix4fv(transformationmat, 1, false, glm::value_ptr(transformation));
 }
 
 // -----------------------------------------------------------------------------
@@ -379,12 +415,12 @@ GLuint CompileShader(const std::string& vertexShaderSrc,
 }
 
 // -----------------------------------------------------------------------------
-//  CREATE SQUARE
+//  INITIALIZE OBJECT
 // -----------------------------------------------------------------------------
-GLuint CreatePlayer()
+GLuint CreateObject(GLfloat object[12])
 {
 
-  GLuint player_indices[6] = {0,1,2,0,2,3};
+  GLuint object_indices[6] = {0,1,2,0,2,3};
 
   GLuint vao;
   glCreateVertexArrays(1, &vao);
@@ -398,15 +434,15 @@ GLuint CreatePlayer()
 
   glBindBuffer( GL_ARRAY_BUFFER, vbo);
   glBufferData( GL_ARRAY_BUFFER,
-                sizeof(player),
-                player,
+                sizeof(object),
+                object,
                 GL_STATIC_DRAW);
 
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, (const void*)0);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(player_indices), player_indices, GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(object_indices), object_indices, GL_STATIC_DRAW);
 
   return vao;
 }
@@ -420,12 +456,12 @@ GLuint CreateMap() {
     for (int i = 0; i < mapIndiceNumber; i += 4) {
         for (int o = 0; o < 2; o++) {
             for (int p = i; p < (i + 3); p++) {
+                
                 map_indices[counter] = getIndices(i, o, p);
                 counter++;
             }
         }
     };
-
     fillMap();
 
     GLuint vao;
@@ -481,7 +517,7 @@ std::vector<std::vector<int>> loadFromFile() {
         while (column < height) { // adds "walls" int vector
             if (row < width) {
                 tempMapVect[(height - 1 - column)][row] = temp;
-                mockMap[(height - 1 - column)][row] = temp;
+                wallMap[(height - 1 - column)][row] = temp;
                 printf("%i ", temp);
                 row++;
                 inn >> temp;
@@ -497,53 +533,40 @@ std::vector<std::vector<int>> loadFromFile() {
 void callMapCoordinateCreation(std::vector<std::vector<int>> levelVect) {
     for (int i = 0; i < height; i++) {    // creates map
         for (int j = 0; j < width; j++) {
-            if (levelVect[i][j] == 1 || levelVect[i][j] == 2) {
-                //findAdjacencies(i, j, levelVect, &wallLog);
-                getRelativeCoordsJustInt(i, j, levelVect[i][j]);
+            if (levelVect[i][j] == 1) {
                 walls++;
-                //printf("\n%i\n", walls);
+                int loop = 0;
+                for (int inner = 0; inner < 4; inner++) {
+                    for (int outer = 0; outer < 3; outer++) {
+                        float temp = getCoordsWithInt(i,j,loop);
+                        coords.push_back(temp);
+                        loop++;
+                    }
+                }
+            }
+            else if (levelVect[i][j] == 2) {
+                Character pacman(j, i);
+                Pacman[0] = pacman;
+                pacman.testFunk();
             }
         }
     }
 }
 
-void updatePlayerArr(glm::mat4 translation) {
-    if (playerDir >= 0) {
-        glm::mat4 playMat;
-        int cringe = 0;
-        for (int i = 0; i < 4; i++) {
-            printf("\n");
-            for (int y = 0; y < 3; y++) {
-                playMat[i][y] = player[cringe];
-                if (playerDir % 2 == 0) {
-                    playMat[i][1] += translation[3][1];
-                }
-                else if (playerDir % 3 == 0) {
-                    playMat[i][0] += translation[3][0];
-                }
-
-                player[cringe] = playMat[i][y];
-                printf("%f\t", translation[i][y]);
-                cringe++;
-            }
-        }
-    }
-}
-
-bool getLegalDir() {
+bool getLegalDir(int dir) {
     if (0 < lerpProg && lerpProg < 1) { return true; }
 
     int testPos[2] = {playerXY[0], playerXY[1]};
-    switch (playerDir) {
+    switch (dir) {
         case 2: testPos[1] += 1; break;      //UP test
         case 4: testPos[1] -= 1; break;      //DOWN test
         case 3: testPos[0] -= 1; break;      //LEFT test
         case 9: testPos[0] += 1; break;      //RIGHT test
     }
 
-    if (testPos[0] < width && testPos[1] < height) {
-        if (mockMap[testPos[1]][testPos[0]] != 1){ return true;  }
-                                             else{ return false; }
+    if ((testPos[0] < width && testPos[1] < height) && (0 <= testPos[0] && 0 <= testPos[1])) {
+        if (wallMap[testPos[1]][testPos[0]] != 1) { return true;  }
+                                              else{ return false; }
     } else { return false; }    //incase moving outside map illegal untill further notice
     return false;
 }
@@ -565,17 +588,14 @@ void getLerpCoords() {
 
 void changeDir() {
     //printf("\nCHANGEDIR %f", lerpProg);
-    if (getLegalDir() && playerDir % prevDir == 0 && playerDir != prevDir) {
-        //printf("\nCurrentDir: %i,\nPrevoisDir: %i\n", playerDir, prevDir);
+    if (getLegalDir(playerDir) && playerDir % prevDir == 0 && playerDir != prevDir) {
         float coordHolder[2];
-        for (int i = 0; i < 2; i++) {
-            coordHolder[i]  = lerpStop[i];
-            lerpStop[i]     = lerpStart[i];
-            lerpStart[i]    = coordHolder[i];
-        }
-        lerpProg = (lerpProg - 1);
+        coordHolder[0]  = lerpStop[0];      coordHolder[1]  = lerpStop[1];
+        lerpStop[0]     = lerpStart[0];     lerpStop[1]     = lerpStart[1];
+        lerpStart[0]    = coordHolder[0];   lerpStart[1]    = coordHolder[1];
+        lerpProg = (1-lerpProg);
     }
-    else if (getLegalDir() && (lerpProg <= 0 || lerpProg >= 1)) {
+    else if (getLegalDir(playerDir) && (lerpProg <= 0 || lerpProg >= 1)) {
         lerpStart[0] = lerpStop[0];
         lerpStart[1] = lerpStop[1];
         getLerpCoords();
@@ -619,26 +639,6 @@ void CleanVAO(GLuint &vao)
 
   glDeleteVertexArrays(1, &vao);
 }
-
-void Camera(const GLuint shaderprogram)
-{
-    //Matrix which helps project our 3D objects onto a 2D image. Not as relevant in 2D projects
-    //The numbers here represent the aspect ratio. Since our window is a square, aspect ratio here is 1:1, but this can be changed.
-    glm::mat4 projection = glm::ortho(0.0f, 0.0f, float(width), float(height));
-
-    //Matrix which defines where in the scene our camera is
-    //                           Position of camera     Direction camera is looking     Vector pointing upwards
-    glm::mat4 view = glm::lookAt(glm::vec3(0, 0, -1), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-
-    //Get unforms to place our matrices into
-    GLuint projmat = glGetUniformLocation(shaderprogram, "u_ProjectionMat");
-    GLuint viewmat = glGetUniformLocation(shaderprogram, "u_ViewMat");
-
-    //Send data from matrices to uniform
-    glUniformMatrix4fv(projmat, 1, false, glm::value_ptr(projection));
-    glUniformMatrix4fv(viewmat, 1, false, glm::value_ptr(view));
-}
-
 
 
 // -----------------------------------------------------------------------------
