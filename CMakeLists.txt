@@ -14,7 +14,10 @@ add_subdirectory(glad)
 
 add_executable(Pacman
 	main.cpp
-	shaders/square.h)
+	shaders/player.h
+	shaders/map.h
+	shaders/ghosts.h
+	shaders/pellets.h)
 
 target_link_libraries(Pacman
 	PRIVATE
