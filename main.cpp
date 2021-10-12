@@ -23,12 +23,12 @@
 GLuint CompileShader(const std::string& vertexShader,
     const std::string& fragmentShader);
 
-GLuint CreateMap();
+GLuint CreateMap(std::vector<GLfloat>* map, GLfloat* mapObj);
 GLuint CreateObject(GLfloat *object, int size);
 
 GLuint getIndices(int out, int mid, int in);
 
-void callMapCoordinateCreation(std::vector<std::vector<int>> levelVect);
+void callMapCoordinateCreation(std::vector<std::vector<int>> levelVect, std::vector<float>* map);
 
 void TransformMap(const GLuint);
 void TransformPlayer(const GLuint, float lerpProg, float lerpStart[], float lerpStop[]);
@@ -56,17 +56,14 @@ void GLAPIENTRY MessageCallback(GLenum source,
 // -----------------------------------------------------------------------------
 
 const int mapSquareNumber = 708;                    // I really wanted to avoid doing this, but due to how you initialize arrays is wierd
-const int mapIndiceNumber = mapSquareNumber * 4;    // this was the best solution for me.
 
 std::vector<float> coords;
 
-int width = 24, height = 24, objects = 1;
+int width = 24, height = 24;
 
-const int spriteSize = 64, resize = 3;
+const int spriteSize = 64, resize = 3;              //Size refrencing for map
 
-int wallMap[spriteSize * 2][spriteSize * 2];        //A soft max for map sizes
-
-int playerDir = 9, prevDir = 1; //set to 1 to avoid intDiv by 0
+int wallMap[spriteSize * 2][spriteSize * 2];        //FIX THIS SHIT
 
 GLfloat player[4 * 3];
 
@@ -74,11 +71,12 @@ GLuint map_indices[mapSquareNumber * 6];
 
 float pi = glm::pi<float>();
 
-float speedDiv = 20.0f;
+float speedDiv = 25.0f;
 float Xshift, Yshift;
 
 int playerXY[2];
 bool permittPelletUpdate = false;
+bool run = true;
 
 enum type {pacman = 0, ghost = 1, pellet = 2};
 
@@ -88,16 +86,19 @@ enum type {pacman = 0, ghost = 1, pellet = 2};
 
 class Character {
 private:
-    float lerpPos[2] = { 0 }, lerpStart[2], lerpStop[2];
+    float lerpPos[2], lerpStart[2], lerpStop[2];
     float lerpStep = 1.0f/speedDiv, lerpProg = lerpStep;
-    int dir = 9, prevDir = dir, XYpos[2] = { 0 }, ID = 0;
+    int dir = 1, prevDir = dir, XYpos[2];
     GLfloat vertices[4 * 3] = { 0 };
+    //AI values
     bool AI = false;
+    int AIdelay = dir;
 public:
-    Character() { printf("\nPACMAN OBJECT CREATED\n"); };
+    Character() {};
     Character(int x, int y);
     Character(int x, int y, bool ai);
     ~Character() {};
+    //Initialization functions
     void characterInit();
     void convertToVert();
     auto initVao();
@@ -110,13 +111,17 @@ public:
     void updateDir(int outDir);
     GLfloat getVertCoord(int index);
     void checkPellet();
+    bool checkGhostCollision();
+    //AI functions
     int getRandomAIdir();
     void AIupdateVertice();
+    int AIgetLerpPog();
+    int AIgetXY(int xy);
 };
 
 class Pellet {
 private:
-    int XYpos[2], ID;
+    int XYpos[2];
     bool enabled = true;
     GLfloat vertices[4 * 3] = { 0 };
 public:
@@ -127,8 +132,6 @@ public:
     GLfloat getVertCoord(int index);
     void removePellet();
     int checkCoords(int XY);
-    bool checkStatus();
-    bool disable();
 };
 
 //Inital definition
@@ -145,8 +148,8 @@ GLuint compileVertices(std::vector<Character*> itObj);
 // -----------------------------------------------------------------------------
 
 Character::Character(int x, int y) {
+    dir = 9, prevDir = 9;
     XYpos[0] = x, XYpos[1] = y;
-    printf("\n\nRight one Xpos, %i, Ypos, %i\n\n", XYpos[0], XYpos[1]);
     characterInit();
 };
 
@@ -154,38 +157,47 @@ Character::Character(int x, int y, bool ai) {
     XYpos[0] = x, XYpos[1] = y;
     AI = ai;
     dir = getRandomAIdir();
+    AIdelay = dir;
     characterInit();
 };
 
 void Character::characterInit() {
     convertToVert();
-    GLfloat temp = getCoordsWithInt(XYpos[1], XYpos[0], 0);
-    if (!AI){
-        lerpStart[0] = (temp); lerpStop[0] = temp;
-        lerpStart[1] = (vertices[1]);  lerpStop[1] = lerpStart[1];
+    lerpStart[0] = (vertices[0]);
+    lerpStart[1] = (vertices[1]);
+    if      (dir == 2) {
+        lerpStop[0] = (vertices[3]);
+        lerpStop[1] = (vertices[4]);
     }
-    else {
-        lerpStart[0] = (temp - Xshift);
-        lerpStart[1] = (vertices[10]);
-        getLerpCoords();
+    else if (dir == 4) {
+        lerpStop[0] = lerpStart[0];
+        lerpStop[1] = lerpStart[1];
+        lerpStop[1] -= Yshift;
     }
-};
+    else if (dir == 3) {
+        lerpStop[0] = lerpStart[0];
+        lerpStop[1] = lerpStart[1];
+        lerpStop[0] -= Xshift;
+    }
+    else if (dir == 9) {
+        lerpStop[0] = (vertices[9]);
+        lerpStop[1] = (vertices[10]);
+    }
+}
 
 void Character::convertToVert() {
     int loop = 0;
     for (int y = 0; y < 4; y++) {
-        printf("\n");
         for (int x = 0; x < 3; x++) {
             vertices[loop] = (getCoordsWithInt(XYpos[1], XYpos[0], loop));
-            printf("%f ", vertices[loop]);
             loop++;
         }
     }
-};
+}
 
 auto Character::initVao() {
     return CreateObject(vertices, sizeof(vertices));
-};
+}
 
 bool Character::getLegalDir(int dir) {
     int testPos[2] = { XYpos[0], XYpos[1] };
@@ -212,14 +224,19 @@ void Character::getLerpCoords() {
     }
 
     lerpStop[0] = ( XYpos[0] * Xshift);
-    lerpStop[1] = ((XYpos[1] * Yshift) -1);
+    lerpStop[1] = ((XYpos[1] * Yshift)-1);
+    if (AI) lerpStop[0] -= 1;
 };
 
 void Character::changeDir() {
-    //printf("\nCHANGEDIR %f", lerpProg);
-    bool updated = false;
-    bool legal = getLegalDir(dir);
-    if (legal && (dir % prevDir == 0) && dir != prevDir) {
+    bool legal = true;
+    if (AI && AIdelay == 0) { dir = getRandomAIdir(); AIdelay = ((rand()+4)%10); }
+    else {
+        AIdelay--;
+        legal = getLegalDir(dir);
+    }
+
+    if (legal && (dir % prevDir == 0) && dir != prevDir && !AI) {
         float coordHolder[2];
         coordHolder[0] = lerpStop[0];      coordHolder[1] = lerpStop[1];
         lerpStop[0]    = lerpStart[0];     lerpStop[1]    = lerpStart[1];
@@ -227,15 +244,13 @@ void Character::changeDir() {
         lerpProg = (1 - lerpProg);
         getLerpCoords();
         prevDir = dir;
-        updated = true;
     }
     else if (legal && (lerpProg <= 0 || lerpProg >= 1)) {
         lerpStart[0] = lerpStop[0];
         lerpStart[1] = lerpStop[1];
         getLerpCoords();
-        lerpProg = lerpStep / 2;
+        lerpProg = lerpStep/2;
         prevDir = dir;
-        updated = true;
     }
 };
 
@@ -251,7 +266,7 @@ void Character::updateLerp() {
         checkPellet();
     }
     if (AI) { AIupdateVertice(); }
-};
+}
 
 void Character::updateDir(int outDir) {
     dir = outDir;
@@ -271,10 +286,24 @@ void Character::checkPellet() {
      }
 }
 
+bool Character::checkGhostCollision(){
+    int check = 0;
+    for (auto& it : Ghosts) {
+        check = 0;
+        for (int u = 0; u < 2; u++) {
+            if (it->AIgetXY(u) == XYpos[u]) {  check++; }
+        }
+        if (check == 2) {
+            if (AIgetLerpPog() <= (lerpProg + lerpStep) && (lerpProg - lerpStep) <= AIgetLerpPog()) { return true; }
+        }
+    }
+    return false;
+}
+
 int Character::getRandomAIdir() {
     int temp = 0;
     do {
-        temp =  (rand() % 3);
+        temp =  (rand() % 4);
         switch (temp)
         {
         case 0: temp = 2;    break;
@@ -285,6 +314,7 @@ int Character::getRandomAIdir() {
     } while (!getLegalDir(temp));
     return temp;
 }
+
 void Character::AIupdateVertice() {
     for (int f = 0; f < 12; f+=3) {
         for (int k = f; k < (f+3); k++) {
@@ -294,6 +324,7 @@ void Character::AIupdateVertice() {
             else if (k == (f+1)) {
                 vertices[k] = (((1 - lerpProg) * lerpStart[1]) + (lerpProg * lerpStop[1]));
             }
+
             switch (k) {
             case 0:   vertices[k];           break;
             case 1:   vertices[k];           break;
@@ -306,19 +337,23 @@ void Character::AIupdateVertice() {
 
             case 9:   vertices[k] += Xshift; break;
             case 10:  vertices[k];           break;
-            default: vertices[k] = 0.0f;     break;
+            default:  vertices[k] = 0.0f;    break;
             }
         }
     }
-    
-    
 }
 
+int Character::AIgetLerpPog() {
+    return lerpProg;
+}
+
+int Character::AIgetXY(int xy) {
+    return XYpos[xy];
+}
 
 Pellet::Pellet(int x, int y) {
     XYpos[0] = x; XYpos[1] = y;
     initCoords();
-    ID = objects; objects++;
 };
 
 void Pellet::initCoords() {
@@ -350,10 +385,6 @@ int Pellet::checkCoords(int XY) {
     return -1;
 }
 
-bool Pellet::checkStatus() {
-    return enabled;
-}
-
 // -----------------------------------------------------------------------------
 // Key Callsback
 // -----------------------------------------------------------------------------
@@ -374,9 +405,11 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 // -----------------------------------------------------------------------------
 int main()
 {
-    std::vector<GLfloat> pelletHider = {1};
+    int collected = 0;
+    std::vector<GLfloat> map;
+
     // Creates coordinates for map
-    callMapCoordinateCreation(loadFromFile());
+    callMapCoordinateCreation(loadFromFile(), &map);
 
     // Initialization of GLFW
     if (!glfwInit())
@@ -389,7 +422,7 @@ int main()
 
     // Setting window hints
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -433,7 +466,7 @@ int main()
                                                 pelletFragmentShaderSrc);
 
 
-    auto mapVAO =           CreateMap();
+    auto mapVAO =           CreateMap(&map,(&map[0]));
     auto mapShaderProgram = CompileShader(      mapVertexShaderSrc,
                                                 mapFragmentShaderSrc);
 
@@ -458,7 +491,7 @@ int main()
         glUseProgram(mapShaderProgram);
         glBindVertexArray(mapVAO);
         glUniform4f(mapVertexColorLocation, 0.1f, 0.0f, 0.6f, 1.0f);
-        glDrawElements(GL_TRIANGLES, 6 * ((width*height)-Pellets.size()) - 1, GL_UNSIGNED_INT, (const void*)0);
+        glDrawElements(GL_TRIANGLES, 6 * (int(width*height)-Pellets.size()) - 1, GL_UNSIGNED_INT, (const void*)0);
 
 
         auto pelletVertexColorLocation = glGetUniformLocation(pelletShaderProgram, "u_Color");
@@ -466,13 +499,14 @@ int main()
         glBindVertexArray(pelletVAO);
         glUniform4f(pelletVertexColorLocation, 0.8f, 0.8f, 0.0f, 1.0f);
         glDrawElements(GL_TRIANGLES, 6 * Pellets.size(), GL_UNSIGNED_INT, (const void*)0);
-        
+
         if (permittPelletUpdate) {
             CleanVAO(pelletVAO);
             pelletVAO = compileVertices(Pellets);
             permittPelletUpdate = false;
+            collected++;
         }
-        
+
         auto playerVertexColorLocation = glGetUniformLocation(playerShaderProgram, "u_Color");
         glUseProgram(playerShaderProgram);
         glBindVertexArray(playerVAO);
@@ -496,18 +530,22 @@ int main()
         glUniform4f(ghostVertexColorLocation, 0.7f, 0.0f, 0.7f, 1.0f);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void*)48);
 
+        if (collected == Pellets.size()) {
+            run = false;
+        }
+
+
         //Update all Lerps
-        if (currentTime > frequency) {
+        if (currentTime > frequency && run) {
             glfwSetTime(0.0);
             Pacman[0]->updateLerp();
             for (auto& ghostIt : Ghosts) {
                 ghostIt->updateLerp();
             }
+            if (Pacman[0]->checkGhostCollision()) { run = false; }
         }
-        
-        glfwSwapBuffers(window);
 
-        
+        glfwSwapBuffers(window);
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
             break;
@@ -557,14 +595,12 @@ GLfloat getCoordsWithInt(int y, int x, int loop) {
 
 void TransformPlayer(const GLuint shaderprogram, float lerpProg, float lerpStart[], float lerpStop[])
 {
-
     //Presentation below purely for ease of viewing individual components of calculation, and not at all necessary.
 
     glm::mat4 translation = glm::translate(glm::mat4(1), glm::vec3(
         (((1 - lerpProg) * lerpStart[0]) + (lerpProg * lerpStop[0])),
         (((1 - lerpProg) * lerpStart[1]) + (lerpProg * lerpStop[1])),
         0.f));
-    //printf("\nProg: %f, StartX: %f, StartY: %f, StopX: %f, StopY: %f\n", lerpProg, lerpStart[0], lerpStart[1], lerpStop[0], lerpStop[1]);
 
 
     GLuint transformationmat = glGetUniformLocation(shaderprogram, "u_TransformationMat");
@@ -648,9 +684,9 @@ GLuint CreateObject(GLfloat *object, int size)
 // -----------------------------------------------------------------------------
 //  CREATE MAP
 // -----------------------------------------------------------------------------
-GLuint CreateMap() {
+GLuint CreateMap(std::vector<GLfloat> * map, GLfloat *mapObj) {
     int counter = 0;
-    for (int i = 0; i < mapIndiceNumber; i += 4) {
+    for (int i = 0; i < ((*map).size()/3); i += 4) {
         for (int o = 0; o < 2; o++) {
             for (int p = i; p < (i + 3); p++) {
 
@@ -666,13 +702,12 @@ GLuint CreateMap() {
 
     GLuint vbo;
     glGenBuffers(1, &vbo);
-
     GLuint ebo;
     glGenBuffers(1, &ebo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER,
-        (coords.size()*sizeof(coords[0])),
-        (&coords[0]),
+        ((*map).size()*sizeof((*map)[0])),
+        (&mapObj)[0],
         GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
@@ -702,16 +737,14 @@ std::vector<std::vector<int>> loadFromFile() {
         int row = 0, column = 0;
         int temp;
         inn >> temp;
-        printf("\n");
         while (column < height) { // adds "walls" int vector
             if (row < width) {
                 tempMapVect[(height - 1 - column)][row] = temp;
                 wallMap[(height - 1 - column)][row] = temp;
-                printf("%i ", temp);
                 row++;
                 inn >> temp;
             }
-            else { row = 0; column++; printf("\n"); }
+            else { row = 0; column++;}
         }
         inn.close();
         return tempMapVect;
@@ -742,7 +775,7 @@ GLuint compileVertices(std::vector<Character*> itObj) {
 }
 
 
-void callMapCoordinateCreation(std::vector<std::vector<int>> levelVect) {
+void callMapCoordinateCreation(std::vector<std::vector<int>> levelVect, std::vector<float>* map) {
     int formerPos[3] = {0,0,0}, hallCount = 0;
     for (int i = 0; i < height; i++) {    // creates map
         for (int j = 0; j < width; j++) {
@@ -751,7 +784,7 @@ void callMapCoordinateCreation(std::vector<std::vector<int>> levelVect) {
                 for (int inner = 0; inner < 4; inner++) {
                     for (int outer = 0; outer < 3; outer++) {
                         float temp = getCoordsWithInt(i, j, loop);
-                        coords.push_back(temp);
+                        (*map).push_back(temp);
                         loop++;
                     }
                 }
