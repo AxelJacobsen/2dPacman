@@ -385,6 +385,7 @@ void Pellet::initCoords() {
             }
             loop++;
         }
+        loop += 2;
     }
 }
 
@@ -567,6 +568,11 @@ int main()
 
         glUniform4f(ghostVertexColorLocation, 0.7f, 0.0f, 0.7f, 1.0f);
         glDrawElements(GL_TRIANGLES, 6, 2 * sizeof(GLfloat), (const void*)48);
+
+        if (collected == Pellets.size()) {
+            run = false;
+        }
+
 
         if (collected == Pellets.size()) {
             run = false;
