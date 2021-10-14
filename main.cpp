@@ -15,7 +15,7 @@
 #include <set>
 #include <cmath>
 #include <vector>
-#include <numeric>
+#include <stb_image.h>
 
 // -----------------------------------------------------------------------------
 // FUNCTION PROTOTYPES
@@ -29,6 +29,7 @@ GLuint CreateObject(GLfloat *object, int size);
 GLuint getIndices(int out, int mid, int in);
 
 void callMapCoordinateCreation(std::vector<std::vector<int>> levelVect, std::vector<float>* map);
+GLuint load_opengl_texture(const std::string& filepath, GLuint slot);
 
 void TransformMap(const GLuint);
 void TransformPlayer(const GLuint, float lerpProg, float lerpStart[], float lerpStop[]);
@@ -89,7 +90,7 @@ private:
     float lerpPos[2], lerpStart[2], lerpStop[2];
     float lerpStep = 1.0f/speedDiv, lerpProg = lerpStep;
     int dir = 1, prevDir = dir, XYpos[2];
-    GLfloat vertices[4 * 3] = { 0 };
+    GLfloat vertices[4 * 5] = { 0 };
     //AI values
     bool AI = false;
     int AIdelay = dir;
@@ -106,7 +107,6 @@ public:
     void getLerpCoords();
     void changeDir();
     void Transform(const GLuint ShaderProgram);
-    void testFunk();
     void updateLerp();
     void updateDir(int outDir);
     GLfloat getVertCoord(int index);
@@ -115,7 +115,7 @@ public:
     //AI functions
     int getRandomAIdir();
     void AIupdateVertice();
-    int AIgetLerpPog();
+    float AIgetLerpPog();
     int AIgetXY(int xy);
 };
 
@@ -166,8 +166,8 @@ void Character::characterInit() {
     lerpStart[0] = (vertices[0]);
     lerpStart[1] = (vertices[1]);
     if      (dir == 2) {
-        lerpStop[0] = (vertices[3]);
-        lerpStop[1] = (vertices[4]);
+        lerpStop[0] = (vertices[5]);
+        lerpStop[1] = (vertices[6]);
     }
     else if (dir == 4) {
         lerpStop[0] = lerpStart[0];
@@ -180,9 +180,11 @@ void Character::characterInit() {
         lerpStop[0] -= Xshift;
     }
     else if (dir == 9) {
-        lerpStop[0] = (vertices[9]);
-        lerpStop[1] = (vertices[10]);
+        lerpStop[0] = (vertices[15]);
+        lerpStop[1] = (vertices[16]);
     }
+    vertices[4] = 1.0f;  vertices[13] = 1.0f;
+    vertices[18] = 1.0f; vertices[19] = 1.0f;
 }
 
 void Character::convertToVert() {
@@ -283,8 +285,8 @@ void Character::checkPellet() {
             if (XYpos[i] == it->checkCoords(i)) { check++; }
         }
         if (check == 2) { it->removePellet(); }
-     }
-}
+    }
+};
 
 bool Character::checkGhostCollision(){
     int check = 0;
@@ -316,7 +318,7 @@ int Character::getRandomAIdir() {
 }
 
 void Character::AIupdateVertice() {
-    for (int f = 0; f < 12; f+=3) {
+    for (int f = 0; f < (3*5); f+=5) {
         for (int k = f; k < (f+3); k++) {
             if (k == f) {
                 vertices[k] = (((1 - lerpProg) * lerpStart[0]) + (lerpProg * lerpStop[0]));
@@ -326,24 +328,25 @@ void Character::AIupdateVertice() {
             }
 
             switch (k) {
-            case 0:   vertices[k];           break;
-            case 1:   vertices[k];           break;
+            case 0:   vertices[k];            break;
+            case 1:   vertices[k];            break;
 
-            case 3:   vertices[k];           break;
-            case 4:   vertices[k] += Yshift; break;
+            case 5:   vertices[k];            break;
+            case 6:   vertices[k] += Yshift;  break;
 
-            case 6:   vertices[k] += Xshift; break;
-            case 7:   vertices[k] += Yshift; break;
+            case 10:  vertices[k] += Xshift; break;
+            case 11:  vertices[k] += Yshift; break;
 
-            case 9:   vertices[k] += Xshift; break;
-            case 10:  vertices[k];           break;
-            default:  vertices[k] = 0.0f;    break;
+            case 15:  vertices[k] += Xshift; break;
+            case 16:  vertices[k];            break;
+            default:  vertices[k] = 0.0f;     break;
             }
         }
     }
 }
 
-int Character::AIgetLerpPog() {
+
+float Character::AIgetLerpPog() {
     return lerpProg;
 }
 
@@ -357,12 +360,29 @@ Pellet::Pellet(int x, int y) {
 };
 
 void Pellet::initCoords() {
-    int loop = 0;
+    int loop = 0, coordCall = 0;
+    float Xquart = Xshift / 3.0f;
+    float Yquart = Yshift / 3.0f;
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 3; x++) {
-            vertices[loop] = (getCoordsWithInt(XYpos[1], XYpos[0], loop));
-            loop++;
+            vertices[loop] = (getCoordsWithInt(XYpos[1], XYpos[0], coordCall));
+            switch (loop) {
+            case 0:  vertices[loop] += Xquart; break;
+            case 1:  vertices[loop] += Yquart; break;
+
+            case 5:  vertices[loop] += Xquart; break;
+            case 6:  vertices[loop] -= Yquart; break;
+
+            case 10: vertices[loop] -= Xquart; break;
+            case 11: vertices[loop] -= Yquart; break;
+
+            case 15: vertices[loop] -= Xquart; break;
+            case 16: vertices[loop] += Yquart; break;
+            default: vertices[loop] = 0.0f;    break;
+            }
+            loop++; coordCall++;
         }
+        loop += 2;
     }
 }
 
@@ -371,11 +391,10 @@ void Pellet::removePellet() {
         for (int i = 0; i < 12; i++) {
             vertices[i] = 0.0f;
         }
+        enabled = false;
+        permittPelletUpdate = true;
     }
-    enabled = false;
-    permittPelletUpdate = true;
 }
-
 GLfloat Pellet::getVertCoord(int index) {
     return vertices[index];
 }
@@ -426,6 +445,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_SAMPLES, 4);
 
     auto window = glfwCreateWindow(width * spriteSize / resize, height * spriteSize / resize, "Pacman", nullptr, nullptr);
 
@@ -461,10 +481,14 @@ int main()
     auto playerShaderProgram = CompileShader(   playerVertexShaderSrc,
                                                 playerFragmentShaderSrc);
 
+
+    GLuint texAttrib = glGetAttribLocation(playerShaderProgram, "aTexcoord");
+    glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(texAttrib);
+
     auto pelletVAO           = compileVertices(Pellets);
     auto pelletShaderProgram = CompileShader(   pelletVertexShaderSrc,
                                                 pelletFragmentShaderSrc);
-
 
     auto mapVAO =           CreateMap(&map,(&map[0]));
     auto mapShaderProgram = CompileShader(      mapVertexShaderSrc,
@@ -475,23 +499,33 @@ int main()
                                                 ghostFragmentShaderSrc);
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glEnable(GL_MULTISAMPLE);
+
 
     double currentTime = 0.0;
     glfwSetTime(0.0);
     float frequency = 0.01f;
+
+    //Texture loading
+    auto pacmanTexture = load_opengl_texture("assets/pacman.png", 2);
+
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         // Time management
+        int Xwidth, Yheight;
+        glfwGetFramebufferSize(window, &Xwidth, &Yheight);
+
+        glViewport(0,0, Xwidth, Yheight);
+
         currentTime = glfwGetTime();
-
         glClear(GL_COLOR_BUFFER_BIT);
-
+        int numElements = (6 * (width * height) - Pellets.size() - 1);
         // Draw MAP
         auto mapVertexColorLocation = glGetUniformLocation(mapShaderProgram, "u_Color");
         glUseProgram(mapShaderProgram);
         glBindVertexArray(mapVAO);
         glUniform4f(mapVertexColorLocation, 0.1f, 0.0f, 0.6f, 1.0f);
-        glDrawElements(GL_TRIANGLES, 6 * (int(width*height)-Pellets.size()) - 1, GL_UNSIGNED_INT, (const void*)0);
+        glDrawElements(GL_TRIANGLES, numElements, GL_UNSIGNED_INT, (const void*)0);
 
 
         auto pelletVertexColorLocation = glGetUniformLocation(pelletShaderProgram, "u_Color");
@@ -506,13 +540,15 @@ int main()
             permittPelletUpdate = false;
             collected++;
         }
-
-        auto playerVertexColorLocation = glGetUniformLocation(playerShaderProgram, "u_Color");
+        auto playerTextureLocation      = glGetUniformLocation(playerShaderProgram, "u_PlayerTexture");
+        auto playerVertexColorLocation  = glGetUniformLocation(playerShaderProgram, "u_Color");
         glUseProgram(playerShaderProgram);
         glBindVertexArray(playerVAO);
         glUniform4f(playerVertexColorLocation, 1.0f, 1.0f, 0.0f, 1.0f);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void*)0);
+
         Pacman[0]->Transform(playerShaderProgram);
+        glUniform1i(playerTextureLocation, 2);
 
         CleanVAO(ghostVAO);
         ghostVAO = compileVertices(Ghosts);
@@ -544,7 +580,6 @@ int main()
             }
             if (Pacman[0]->checkGhostCollision()) { run = false; }
         }
-
         glfwSwapBuffers(window);
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -559,10 +594,17 @@ int main()
     glDeleteProgram(pelletShaderProgram);
     glDeleteProgram(ghostShaderProgram);
 
+    glDeleteTextures(1, &pacmanTexture);
+
+
     CleanVAO(playerVAO);
     CleanVAO(mapVAO);
     CleanVAO(pelletVAO);
     CleanVAO(ghostVAO);
+
+    delete (&Pellets);
+    delete (&Ghosts);
+    delete (&Pacman);
 
     glfwTerminate();
 
@@ -638,6 +680,44 @@ GLuint CompileShader(const std::string& vertexShaderSrc,
     glDeleteShader(fragmentShader);
 
     return shaderProgram;
+}
+
+GLuint load_opengl_texture(const std::string& filepath, GLuint slot)
+{
+    /**
+     *  - Use the STB Image library to load a texture in here
+     *  - Initialize the texture into an OpenGL texture
+     *    - This means creating a texture with glGenTextures or glCreateTextures (4.5)
+     *    - And transferring the loaded texture data into this texture
+     *    - And setting the texture format
+     *  - Finally return the valid texture
+     */
+
+     /** Image width, height, bit depth */
+    int w, h, bpp;
+    auto pixels = stbi_load(filepath.c_str(), &w, &h, &bpp, 0);
+
+    /*Generate a texture objectand upload the loaded image to it.*/
+    GLuint tex;
+    glGenTextures(1, &tex);
+    glActiveTexture(GL_TEXTURE0 + slot);//Texture Unit
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    //GL_GENERATE_MIPMAP(GL_TEXTURE_2D);
+
+    /** Set parameters for the texture */
+    //Wrapping
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    //Filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    /** Very important to free the memory returned by STBI, otherwise we leak */
+    if (pixels)
+        stbi_image_free(pixels);
+
+    return tex;
 }
 
 // -----------------------------------------------------------------------------
@@ -738,9 +818,10 @@ std::vector<std::vector<int>> loadFromFile() {
         int temp;
         inn >> temp;
         while (column < height) { // adds "walls" int vector
+            int Yvalue = (height - 1 - column);
             if (row < width) {
-                tempMapVect[(height - 1 - column)][row] = temp;
-                wallMap[(height - 1 - column)][row] = temp;
+                tempMapVect[Yvalue][row] = temp;
+                wallMap[(Yvalue)][row] = temp;
                 row++;
                 inn >> temp;
             }
