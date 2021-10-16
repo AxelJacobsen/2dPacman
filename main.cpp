@@ -15,8 +15,7 @@
 #include <set>
 #include <cmath>
 #include <vector>
-#include <vector>
-//#include <stb_image.h>
+#include <stb_image.h>
 
 // -----------------------------------------------------------------------------
 // FUNCTION PROTOTYPES
@@ -25,17 +24,22 @@ GLuint CompileShader(const std::string& vertexShader,
     const std::string& fragmentShader);
 
 GLuint CreateMap(std::vector<GLfloat>* map, GLfloat* mapObj);
-GLuint CreateObject(GLfloat *object, int size);
+GLuint CreateObject(GLfloat *object, int size, const int stride);
 
 GLuint getIndices(int out, int mid, int in);
 
 void callMapCoordinateCreation(std::vector<std::vector<int>> levelVect, std::vector<float>* map);
-//GLuint load_opengl_texture(const std::string& filepath, GLuint slot);
+GLuint load_opengl_texture(const std::string& filepath, GLuint slot);
 
 void TransformMap(const GLuint);
 void TransformPlayer(const GLuint, float lerpProg, float lerpStart[], float lerpStop[]);
 
 GLfloat getCoordsWithInt(int y, int x, int type);
+
+void drawMap(const GLuint shader,     const GLuint vao);
+void drawPellets(const GLuint shader, const GLuint vao);
+void drawGhosts(const GLuint shader);
+void drawPacman(const GLuint shader);
 
 
 std::vector<std::vector<int>> loadFromFile();
@@ -55,27 +59,24 @@ void GLAPIENTRY MessageCallback(GLenum source,
 // -----------------------------------------------------------------------------
 // Globals
 // -----------------------------------------------------------------------------
-
-const int mapSquareNumber = 708;                    // I really wanted to avoid doing this, but due to how you initialize arrays is wierd
+const int spriteSize = 64;
 
 std::vector<float> coords;
 
-int width = 24, height = 24;
-
-const int spriteSize = 64, resize = 3;              //Size refrencing for map
+int     width = 24, 
+        height = 24;    //Arbitrary values
 
 int wallMap[spriteSize * 2][spriteSize * 2];        //FIX THIS SHIT
 
 float pi = glm::pi<float>();
 
-float speedDiv = 25.0f;
-float Xshift, Yshift;
+float   speedDiv = 10.0f,
+        Xshift, 
+        Yshift;
 
 int playerXY[2];
 bool permittPelletUpdate = false;
 bool run = true;
-
-enum type {pacman = 0, ghost = 1, pellet = 2};
 
 // -----------------------------------------------------------------------------
 // Classes
@@ -83,13 +84,24 @@ enum type {pacman = 0, ghost = 1, pellet = 2};
 
 class Character {
 private:
-    float lerpPos[2], lerpStart[2], lerpStop[2];
-    float lerpStep = 1.0f/speedDiv, lerpProg = lerpStep;
-    int dir = 1, prevDir = dir, XYpos[2];
-    GLfloat vertices[4 * 5] = { 0 };
+    //Shared Values
+    float   lerpPos[2], 
+            lerpStart[2], 
+            lerpStop[2],
+            lerpStep = 1.0f/speedDiv, 
+            lerpProg = lerpStep;
+
+    int     dir = 1, 
+            prevDir = dir,   
+            XYpos[2], 
+            animVal = 0;
+
+    bool    animFlip = true;
+    GLfloat vertices[4 * 5] = { 0.0f };
+
     //AI values
-    bool AI = false;
-    int AIdelay = dir;
+    bool    AI = false;
+    int     AIdelay = dir;
 public:
     Character() {};
     Character(int x, int y);
@@ -108,18 +120,22 @@ public:
     GLfloat getVertCoord(int index);
     void checkPellet();
     bool checkGhostCollision();
+    void characterAnimate(float hMin, float wMin, float hMax, float wMax);
+    void pacAnimate();
+
     //AI functions
     int getRandomAIdir();
     void AIupdateVertice();
     float AIgetLerpPog();
     int AIgetXY(int xy);
+    void AIanimate();
 };
 
 class Pellet {
 private:
-    int XYpos[2];
-    bool enabled = true;
-    GLfloat vertices[4 * 3] = { 0 };
+    int     XYpos[2];
+    bool    enabled = true;
+    GLfloat vertices[4 * 3] = { 0.0f };
 public:
     Pellet() {};
     Pellet(int x, int y);
@@ -157,13 +173,13 @@ Character::Character(int x, int y, bool ai) {
     characterInit();
 };
 
-void Character::characterInit() {
+void Character::characterInit() { 
     convertToVert();
-    lerpStart[0] = (vertices[0]);
-    lerpStart[1] = (vertices[1]);
+    lerpStart[0] = vertices[0];
+    lerpStart[1] = vertices[1];
     if      (dir == 2) {
-        lerpStop[0] = (vertices[5]);
-        lerpStop[1] = (vertices[6]);
+        lerpStop[0] = vertices[5];
+        lerpStop[1] = vertices[6];
     }
     else if (dir == 4) {
         lerpStop[0] = lerpStart[0];
@@ -176,25 +192,32 @@ void Character::characterInit() {
         lerpStop[0] -= Xshift;
     }
     else if (dir == 9) {
-        lerpStop[0] = (vertices[15]);
-        lerpStop[1] = (vertices[16]);
+        lerpStop[0] = vertices[15];
+        lerpStop[1] = vertices[16];
     }
-    vertices[4] = 1.0f;  vertices[13] = 1.0f;
-    vertices[18] = 1.0f; vertices[19] = 1.0f;
+    if (!AI){
+        pacAnimate();
+    }
+    else {
+        AIanimate();
+    }
+    
 }
 
 void Character::convertToVert() {
-    int loop = 0;
+    int loop = 0, callCount = 0;
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 3; x++) {
-            vertices[loop] = (getCoordsWithInt(XYpos[1], XYpos[0], loop));
-            loop++;
+            vertices[loop] = (getCoordsWithInt(XYpos[1], XYpos[0], callCount));
+            loop++; callCount++;
         }
+        loop += 2;
     }
 }
 
 auto Character::initVao() {
-    return CreateObject(vertices, sizeof(vertices));
+    int stride = 5;
+    return CreateObject(vertices, sizeof(vertices), stride);
 }
 
 bool Character::getLegalDir(int dir) {
@@ -298,6 +321,33 @@ bool Character::checkGhostCollision(){
     return false;
 }
 
+void Character::characterAnimate(float hMin, float wMin, float hMax, float wMax) {
+    vertices[3]  = wMin;   vertices[4]  =   hMax; // Bot Left
+    vertices[8]  = wMin;   vertices[9]  =   hMin; // Top Left
+    vertices[13] = wMax;   vertices[14] =   hMin; // Top Right
+    vertices[18] = wMax;   vertices[19] =   hMax; // Bot Right
+}
+
+void Character::pacAnimate() {
+    if (animFlip) { animVal++; }
+    else { animVal--; }
+    float wMod = (1.0f / 6.0f);
+    float hMod = (1.0f / 4.0f);
+    float mhMod = hMod;
+    float mwMod = (wMod * animVal) + wMod;
+          wMod *= animVal;
+
+    switch (dir) {
+    case 2: hMod *= 1; mhMod *= 2; break;   //UP
+    case 4: hMod *= 0; mhMod *= 1; break;   //DOWN
+    case 3: hMod *= 2; mhMod *= 3; break;   //LEFT
+    case 9: hMod *= 3; mhMod *= 4; break;   //RIGHT
+    }
+    characterAnimate(hMod, wMod, mhMod, mwMod);
+    if      (animVal == 3) animFlip = false;
+    else if (animVal == 0) animFlip = true;
+}
+
 int Character::getRandomAIdir() {
     int temp = 0;
     do {
@@ -314,7 +364,7 @@ int Character::getRandomAIdir() {
 }
 
 void Character::AIupdateVertice() {
-    for (int f = 0; f < (3*5); f+=5) {
+    for (int f = 0; f < (4*5); f+=5) {
         for (int k = f; k < (f+3); k++) {
             if (k == f) {
                 vertices[k] = (((1 - lerpProg) * lerpStart[0]) + (lerpProg * lerpStop[0]));
@@ -322,7 +372,6 @@ void Character::AIupdateVertice() {
             else if (k == (f+1)) {
                 vertices[k] = (((1 - lerpProg) * lerpStart[1]) + (lerpProg * lerpStop[1]));
             }
-
             switch (k) {
             case 0:   vertices[k];            break;
             case 1:   vertices[k];            break;
@@ -330,17 +379,16 @@ void Character::AIupdateVertice() {
             case 5:   vertices[k];            break;
             case 6:   vertices[k] += Yshift;  break;
 
-            case 10:  vertices[k] += Xshift; break;
-            case 11:  vertices[k] += Yshift; break;
+            case 10:  vertices[k] += Xshift;  break;
+            case 11:  vertices[k] += Yshift;  break;
 
-            case 15:  vertices[k] += Xshift; break;
+            case 15:  vertices[k] += Xshift;  break;
             case 16:  vertices[k];            break;
             default:  vertices[k] = 0.0f;     break;
             }
         }
     }
 }
-
 
 float Character::AIgetLerpPog() {
     return lerpProg;
@@ -349,6 +397,31 @@ float Character::AIgetLerpPog() {
 int Character::AIgetXY(int xy) {
     return XYpos[xy];
 }
+
+void Character::AIanimate() {
+    float wMod = (1.0f / 6.0f);
+    float hMod = (1.0f / 4.0f);
+    float mhMod = hMod, mwMod = wMod;
+    if (!animFlip) {
+        animFlip = true; 
+        animVal = 1; 
+        wMod   *= 5;
+        mwMod   = 1.0f;
+    }
+    else {
+        animFlip = false; 
+        animVal = 0; 
+        wMod   *= 4;
+        mwMod  *= 5;
+    }
+    switch (dir) {
+        case 2: hMod *= 1; mhMod *= 2; break;   //UP
+        case 4: hMod *= 0; mhMod *= 1; break;   //DOWN
+        case 3: hMod *= 2; mhMod *= 3; break;   //LEFT
+        case 9: hMod *= 3; mhMod *= 4; break;   //RIGHT
+    }
+    characterAnimate(hMod, wMod, mhMod, mwMod);
+};
 
 
 
@@ -385,7 +458,6 @@ void Pellet::initCoords() {
             }
             loop++;
         }
-        loop += 2;
     }
 }
 
@@ -449,7 +521,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_SAMPLES, 4);
-
+    int resize = 3;
     auto window = glfwCreateWindow(width * spriteSize / resize, height * spriteSize / resize, "Pacman", nullptr, nullptr);
 
     glfwSetKeyCallback(window, key_callback);
@@ -474,43 +546,36 @@ int main()
         return EXIT_FAILURE;
     }
 
-    // Eanable capture of debug output.
-    //glEnable(GL_DEBUG_OUTPUT);
-    //glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    //glDebugMessageCallback(MessageCallback, 0);
-    //glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-
-    auto playerVAO           = compileVertices(Pacman);
-    auto playerShaderProgram = CompileShader(   playerVertexShaderSrc,
-                                                playerFragmentShaderSrc);
-
-
-    //GLuint texAttrib = glGetAttribLocation(playerShaderProgram, "aTexcoord");
-    //glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
-    //glEnableVertexAttribArray(texAttrib);
+    auto playerShaderProgram = CompileShader(  playerVertexShaderSrc,
+                                               playerFragmentShaderSrc);
+    
+    GLint pposAttrib = glGetAttribLocation(playerShaderProgram, "pPosition");
+    glEnableVertexAttribArray(pposAttrib);
+    glVertexAttribPointer(pposAttrib, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
 
     auto pelletVAO           = compileVertices(Pellets);
-    auto pelletShaderProgram = CompileShader(   pelletVertexShaderSrc,
-                                                pelletFragmentShaderSrc);
+    auto pelletShaderProgram = CompileShader(  pelletVertexShaderSrc,
+                                               pelletFragmentShaderSrc);
 
-    auto mapVAO =           CreateMap(&map,(&map[0]));
-    auto mapShaderProgram = CompileShader(      mapVertexShaderSrc,
-                                                mapFragmentShaderSrc);
+    auto mapVAO              = CreateMap(&map,(&map[0]));
+    auto mapShaderProgram    = CompileShader(  mapVertexShaderSrc,
+                                               mapFragmentShaderSrc);
 
-    auto ghostVAO = compileVertices(Ghosts);
-    auto ghostShaderProgram = CompileShader(    ghostVertexShaderSrc,
-                                                ghostFragmentShaderSrc);
-
+    auto ghostShaderProgram  = CompileShader(  ghostVertexShaderSrc,
+                                               ghostFragmentShaderSrc);
+    
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glEnable(GL_MULTISAMPLE);
 
+    //Texture loading
+    auto spriteSheetP = load_opengl_texture("assets/pacman.png", 0);
+    auto spriteSheetG = load_opengl_texture("assets/pacman.png", 1);
 
     double currentTime = 0.0;
     glfwSetTime(0.0);
     float frequency = 0.01f;
-
-    //Texture loading
-    //auto pacmanTexture = load_opengl_texture("assets/pacman.png", 2);
+    int animDelay = 10;
+    
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -522,78 +587,46 @@ int main()
 
         currentTime = glfwGetTime();
         glClear(GL_COLOR_BUFFER_BIT);
-        int numElements = (6 * (width * height) - Pellets.size() - 1);
-        // Draw MAP
-        auto mapVertexColorLocation = glGetUniformLocation(mapShaderProgram, "u_Color");
-        glUseProgram(mapShaderProgram);
-        glBindVertexArray(mapVAO);
-        glUniform4f(mapVertexColorLocation, 0.1f, 0.0f, 0.6f, 1.0f);
-        glDrawElements(GL_TRIANGLES, numElements, GL_UNSIGNED_INT, (const void*)0);
-
-
-        auto pelletVertexColorLocation = glGetUniformLocation(pelletShaderProgram, "u_Color");
-        glUseProgram(pelletShaderProgram);
-        glBindVertexArray(pelletVAO);
-        glUniform4f(pelletVertexColorLocation, 0.8f, 0.8f, 0.0f, 1.0f);
-        glDrawElements(GL_TRIANGLES, int(6 * Pellets.size()), GL_UNSIGNED_INT, (const void*)0);
+        
+        // Draw Objects
+        drawMap(mapShaderProgram, mapVAO);
+        drawPellets(pelletShaderProgram, pelletVAO);
+        drawPacman(playerShaderProgram);
+        drawGhosts(ghostShaderProgram);
 
         if (permittPelletUpdate) {
             CleanVAO(pelletVAO);
             pelletVAO = compileVertices(Pellets);
             permittPelletUpdate = false;
             collected++;
+            if (collected == Pellets.size()) {
+                run = false;
+            }
         }
-        //auto playerTextureLocation      = glGetUniformLocation(playerShaderProgram, "u_PlayerTexture");
-        auto playerVertexColorLocation  = glGetUniformLocation(playerShaderProgram, "u_Color");
-        glUseProgram(playerShaderProgram);
-        glBindVertexArray(playerVAO);
-        //glUniform4f(playerVertexColorLocation, 1.0f, 1.0f, 0.0f, 1.0f);
-        glDrawElements(GL_TRIANGLES, 6, 2 * sizeof(GLfloat), (const void*)0);
-
-        Pacman[0]->Transform(playerShaderProgram);
-        //glUniform1i(playerTextureLocation, 2);
-
-        CleanVAO(ghostVAO);
-        ghostVAO = compileVertices(Ghosts);
-
-        auto ghostVertexColorLocation = glGetUniformLocation(ghostShaderProgram, "u_Color");
-        glUseProgram(ghostShaderProgram);
-        glBindVertexArray(ghostVAO);
-
-        glUniform4f(ghostVertexColorLocation, 0.7f, 0.0f, 0.0f, 1.0f);
-        glDrawElements(GL_TRIANGLES, 6, 2 * sizeof(GLfloat), (const void*)0);
-
-        glUniform4f(ghostVertexColorLocation, 0.0f, 0.7f, 0.0f, 1.0f);
-        glDrawElements(GL_TRIANGLES, 6, 2 * sizeof(GLfloat), (const void*)24);
-
-        glUniform4f(ghostVertexColorLocation, 0.7f, 0.0f, 0.7f, 1.0f);
-        glDrawElements(GL_TRIANGLES, 6, 2 * sizeof(GLfloat), (const void*)48);
-
-        if (collected == Pellets.size()) {
-            run = false;
-        }
-
-
-        if (collected == Pellets.size()) {
-            run = false;
-        }
-
 
         //Update all Lerps
         if (currentTime > frequency && run) {
+            bool animate = false;
+
+            if (animDelay == 0) { animate = true; animDelay = 3; }
+            else { animDelay--; }
+
             glfwSetTime(0.0);
             Pacman[0]->updateLerp();
+
+            if (animate) Pacman[0]->pacAnimate();
             for (auto& ghostIt : Ghosts) {
                 ghostIt->updateLerp();
+                if (animate) ghostIt->AIanimate();
             }
             if (Pacman[0]->checkGhostCollision()) { run = false; }
         }
+
         glfwSwapBuffers(window);
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
             break;
         }
-
     }
 
     glUseProgram(0);
@@ -602,59 +635,21 @@ int main()
     glDeleteProgram(pelletShaderProgram);
     glDeleteProgram(ghostShaderProgram);
 
-    //glDeleteTextures(1, &pacmanTexture);
+    glDeleteTextures(1, &spriteSheetP);
+    glDeleteTextures(1, &spriteSheetG);
 
-
-    CleanVAO(playerVAO);
     CleanVAO(mapVAO);
     CleanVAO(pelletVAO);
-    CleanVAO(ghostVAO);
-
-
-    for (auto& pac : Pacman)
-        delete(pac);
-    for (auto& pell : Pellets)
-        delete(pell);
-    for (auto& ghos : Ghosts)
-        delete(ghos);
-
-    delete (&Pellets);
-    delete (&Ghosts);
-    delete (&Pacman);
 
     glfwTerminate();
 
     return EXIT_SUCCESS;
 }
 
-GLfloat getCoordsWithInt(int y, int x, int loop) {
-    Xshift = 2.0f / (float(width));
-    Yshift = 2.0f / (float(height));
-    GLfloat tempXs, tempYs;
-    if (x == 0 && y == 0) { tempXs = 0, tempYs = 0; }
-    else { tempXs = (Xshift * x), tempYs = (Yshift * y); }
-
-    switch (loop) {
-    case 0:   tempXs;             return (tempXs - 1.0f);  // Top Left
-    case 1:   tempYs;             return (tempYs - 1.0f);  // Top Left
-
-    case 3:   tempXs;             return (tempXs - 1.0f);  // Bot Left
-    case 4:   tempYs += Yshift;   return (tempYs - 1.0f);  // Bot Left
-
-    case 6:   tempXs += Xshift;   return (tempXs - 1.0f);  // Bot Right
-    case 7:   tempYs += Yshift;   return (tempYs - 1.0f);  // Bot Right
-
-    case 9:   tempXs += Xshift;   return (tempXs - 1.0f);  // Top Right
-    case 10:  tempYs;             return (tempYs - 1.0f);  // Top Right
-    default: return 0.0f;
-    }
-};
-
 
 void TransformPlayer(const GLuint shaderprogram, float lerpProg, float lerpStart[], float lerpStop[])
 {
     //LERP performed in the shader for the pacman object
-
     glm::mat4 translation = glm::translate(glm::mat4(1), glm::vec3(
         (((1 - lerpProg) * lerpStart[0]) + (lerpProg * lerpStop[0])),
         (((1 - lerpProg) * lerpStart[1]) + (lerpProg * lerpStop[1])),
@@ -664,7 +659,68 @@ void TransformPlayer(const GLuint shaderprogram, float lerpProg, float lerpStart
 
     glUniformMatrix4fv(transformationmat, 1, false, glm::value_ptr(translation));
 
+
 }
+// -----------------------------------------------------------------------------
+// DRAW FUNCTIONS
+// -----------------------------------------------------------------------------
+void drawMap(const GLuint shader, const GLuint vao) {
+    int numElements = (6 * (width * height) - Pellets.size() - 1);
+    auto mapVertexColorLocation = glGetUniformLocation(shader, "u_Color");
+    glUseProgram(shader);
+    glBindVertexArray(vao);
+    glUniform4f(mapVertexColorLocation, 0.1f, 0.0f, 0.6f, 1.0f);
+    glDrawElements(GL_TRIANGLES, numElements, GL_UNSIGNED_INT, (const void*)0);
+}
+void drawPellets(const GLuint shader, const GLuint vao) {
+    auto pelletVertexColorLocation = glGetUniformLocation(shader, "u_Color");
+    glUseProgram(shader);
+    glBindVertexArray(vao);
+    glUniform4f(pelletVertexColorLocation, 0.8f, 0.8f, 0.0f, 1.0f);
+    glDrawElements(GL_TRIANGLES, int(6 * Pellets.size()), GL_UNSIGNED_INT, (const void*)0);
+}
+void drawGhosts(const GLuint shader) {
+
+    auto ghostVAO = compileVertices(Ghosts);
+
+    GLuint gtexAttrib = glGetAttribLocation(shader, "gTexcoord");
+    glEnableVertexAttribArray(gtexAttrib);
+    glVertexAttribPointer(gtexAttrib, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+
+    auto ghostVertexColorLocation = glGetUniformLocation(shader, "gColor");
+    auto ghostTextureLocation = glGetUniformLocation(shader, "g_GhostTexture");
+    glUseProgram(shader);
+    glBindVertexArray(ghostVAO);
+    glUniform1i(ghostTextureLocation, 1);
+
+    glUniform4f(ghostVertexColorLocation, 0.7f, 0.0f, 0.0f, 1.0f);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void*)0);
+
+    glUniform4f(ghostVertexColorLocation, 0.0f, 0.7f, 0.0f, 1.0f);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void*)24);
+
+    glUniform4f(ghostVertexColorLocation, 0.7f, 0.0f, 0.7f, 1.0f);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void*)48);
+
+    CleanVAO(ghostVAO);
+}
+
+void drawPacman(const GLuint shader) {
+    auto playerVAO = compileVertices(Pacman);
+
+    GLuint ptexAttrib = glGetAttribLocation(shader, "pTexcoord");
+    glEnableVertexAttribArray(ptexAttrib);
+    glVertexAttribPointer(ptexAttrib, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+
+    auto playerTextureLocation = glGetUniformLocation(shader, "u_PlayerTexture");
+    glUseProgram(shader);
+    glBindVertexArray(playerVAO);
+    glUniform1i(playerTextureLocation, 0);
+    Pacman[0]->Transform(shader);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void*)0);
+    CleanVAO(playerVAO);
+}
+   
 
 // -----------------------------------------------------------------------------
 // COMPILE SHADER
@@ -689,38 +745,31 @@ GLuint CompileShader(const std::string& vertexShaderSrc,
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
 
+    glBindFragDataLocation(shaderProgram, 0, "color");
     glLinkProgram(shaderProgram);
+    glUseProgram(shaderProgram);
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
     return shaderProgram;
 }
-/*
+
 GLuint load_opengl_texture(const std::string& filepath, GLuint slot)
 {
-    /**
-     *  - Use the STB Image library to load a texture in here
-     *  - Initialize the texture into an OpenGL texture
-     *    - This means creating a texture with glGenTextures or glCreateTextures (4.5)
-     *    - And transferring the loaded texture data into this texture
-     *    - And setting the texture format
-     *  - Finally return the valid texture
-     */
-
-     /** Image width, height, bit depth *//*
+     /** Image width, height, bit depth */
     int w, h, bpp;
-    auto pixels = stbi_load(filepath.c_str(), &w, &h, &bpp, 0);
+    auto pixels = stbi_load(filepath.c_str(), &w, &h, &bpp, STBI_rgb_alpha);
 
-    /*Generate a texture objectand upload the loaded image to it.*//*
+    /*Generate a texture object and upload the loaded image to it.*/
     GLuint tex;
     glGenTextures(1, &tex);
-    glActiveTexture(GL_TEXTURE0 + slot);//Texture Unit
+    glActiveTexture(GL_TEXTURE0 + slot); //Texture Unit
     glBindTexture(GL_TEXTURE_2D, tex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
     //GL_GENERATE_MIPMAP(GL_TEXTURE_2D);
 
-    /** Set parameters for the texture *//*
+    /** Set parameters for the texture */
     //Wrapping
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -728,17 +777,17 @@ GLuint load_opengl_texture(const std::string& filepath, GLuint slot)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    /** Very important to free the memory returned by STBI, otherwise we leak *//*
+    /** Very important to free the memory returned by STBI, otherwise we leak */
     if (pixels)
         stbi_image_free(pixels);
 
     return tex;
-}
-*/
+};
+
 // -----------------------------------------------------------------------------
 //  INITIALIZE OBJECT
 // -----------------------------------------------------------------------------
-GLuint CreateObject(GLfloat *object, int size)
+GLuint CreateObject(GLfloat* object, int size, const int stride)
 {
     std::vector<GLuint> object_indices;
 
@@ -767,13 +816,13 @@ GLuint CreateObject(GLfloat *object, int size)
         GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, (const void*)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, (sizeof(GLfloat) * stride), (const void*)0);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, object_indices.size()*sizeof(object_indices)[0], (&object_indices[0]), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, object_indices.size() * sizeof(object_indices)[0], (&object_indices[0]), GL_STATIC_DRAW);
 
     return vao;
-}
+};
 
 
 // -----------------------------------------------------------------------------
@@ -781,12 +830,11 @@ GLuint CreateObject(GLfloat *object, int size)
 // -----------------------------------------------------------------------------
 GLuint CreateMap(std::vector<GLfloat> * map, GLfloat *mapObj) {
     int counter = 0;
-    GLuint map_indices[mapSquareNumber * 6];
+    std::vector<GLuint> mapIndices;
     for (int i = 0; i < ((*map).size()/3); i += 4) {
         for (int o = 0; o < 2; o++) {
             for (int p = i; p < (i + 3); p++) {
-
-                map_indices[counter] = getIndices(i, o, p);
+                mapIndices.push_back(getIndices(i, o, p));
                 counter++;
             }
         }
@@ -810,7 +858,7 @@ GLuint CreateMap(std::vector<GLfloat> * map, GLfloat *mapObj) {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, (const void*)0);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(map_indices), map_indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mapIndices.size() * sizeof(mapIndices[0]) , (&mapIndices[0]), GL_STATIC_DRAW);
 
     return vao;
 }
@@ -849,31 +897,54 @@ std::vector<std::vector<int>> loadFromFile() {
     else { printf("\n\nERROR: Couldnt find level file, check that it is in the right place.\n\n"); exit(EXIT_FAILURE); }
 }
 
+GLfloat getCoordsWithInt(int y, int x, int loop) {
+    Xshift = 2.0f / (float(width));
+    Yshift = 2.0f / (float(height));
+    GLfloat tempXs, tempYs;
+    if (x == 0 && y == 0) { tempXs = 0, tempYs = 0; }
+    else { tempXs = (Xshift * x), tempYs = (Yshift * y); }
+
+    switch (loop) {
+    case 0:   tempXs;             return (tempXs - 1.0f);  // Top Left
+    case 1:   tempYs;             return (tempYs - 1.0f);  // Top Left
+
+    case 3:   tempXs;             return (tempXs - 1.0f);  // Bot Left
+    case 4:   tempYs += Yshift;   return (tempYs - 1.0f);  // Bot Left
+
+    case 6:   tempXs += Xshift;   return (tempXs - 1.0f);  // Bot Right
+    case 7:   tempYs += Yshift;   return (tempYs - 1.0f);  // Bot Right
+
+    case 9:   tempXs += Xshift;   return (tempXs - 1.0f);  // Top Right
+    case 10:  tempYs;             return (tempYs - 1.0f);  // Top Right
+    default: return 0.0f;
+    }
+};
+
 GLuint compileVertices(std::vector<Pellet*> itObj) {
     std::vector<GLfloat> veticieList;
-
+    int stride = 3;
     for (auto & it : Pellets) {
         for (int i = 0; i < 12; i++) {
             veticieList.push_back(it->getVertCoord(i));
         }
     }
-    return CreateObject(&veticieList[0], veticieList.size()*sizeof(veticieList[0]));
+    return CreateObject(&veticieList[0], veticieList.size()*sizeof(veticieList[0]), stride);
 }
 
 GLuint compileVertices(std::vector<Character*> itObj) {
     std::vector<GLfloat> veticieList;
-
+    int stride = 5;
     for (auto& it : itObj) {
         for (int i = 0; i < 20; i++) {
             veticieList.push_back(it->getVertCoord(i));
         }
     }
-    return CreateObject(&veticieList[0], veticieList.size() * sizeof(veticieList[0]));
+    return CreateObject(&veticieList[0], veticieList.size() * sizeof(veticieList[0]), stride);
 }
 
 
 void callMapCoordinateCreation(std::vector<std::vector<int>> levelVect, std::vector<float>* map) {
-    int formerPos[3] = {0,0,0}, hallCount = 0;
+    int formerPos[3] = {0}, hallCount = 0;
     for (int i = 0; i < height; i++) {    // creates map
         for (int j = 0; j < width; j++) {
             if (levelVect[i][j] == 1) {
@@ -887,14 +958,9 @@ void callMapCoordinateCreation(std::vector<std::vector<int>> levelVect, std::vec
                 }
             }
             else if (levelVect[i][j] == 2) {
-                
-                   Pacman.push_back(new Character(j, i));
+                Pacman.push_back(new Character(j, i));
             }
-            else { hallCount++; 
-            
-            Pellets.push_back(new Pellet(j, i)); 
-            }
-            
+            else { hallCount++;  Pellets.push_back(new Pellet(j, i)); }
         }
     }
     do {
