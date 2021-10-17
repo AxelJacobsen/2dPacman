@@ -113,5 +113,5 @@ file that is part of the repository.
    fit the screen. Add an option for full-screen.
 
 ** Information
-  *Running instructions:* Extract into Visual stuido and run with either main.cpp or pacman exe.
-  *Controls:* Arrow keys for movement.
+ - *Running instructions:* Extract into Visual stuido and run with either main.cpp or pacman.exe.
+ - *Controls:* Arrow keys for movement.
