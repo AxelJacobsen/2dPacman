@@ -25,6 +25,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <stb_image.h>
+#include <time.h>
 
 //STD Inclusions
 #include <iostream>
@@ -69,13 +70,11 @@ const int spriteSize = 64;
 
 std::vector<float> coords;
 
-int      width,  height;                    ///< Width and Height kept global due to frequent use in various places         
-float    Xshift, Yshift;                    ///< Width and Height of one "square"
-
-int wallMap[spriteSize * 2][spriteSize * 2];        //FIX THIS SHIT
-
-bool    permittPelletUpdate = false,        ///< Reloads Pellet VAO
-        run = true;                         ///< End condition
+int      width,  height;                   ///< Width and Height kept global due to frequent use in various places      
+int      ghostCount = 10;                  ///< Ammount of ghosts, soft cap at 20 due to processing power
+float    Xshift, Yshift;                   ///< Width and Height of one "square"
+bool        permittPelletUpdate = false,   ///< Reloads Pellet VAO
+            run = true;                    ///< End condition
 
 // -----------------------------------------------------------------------------
 // Classes
@@ -101,6 +100,7 @@ private:
 
     bool    animFlip = true;            //For ghosts flipflops between frames for pac decides which direction to animate
     GLfloat vertices[4 * 5] = { 0.0f }; //Holds character vertices,  X Y Z T1 T2
+    
 
     //AI values
     bool    AI = false;                 //Decides whether object is pacman or ghost
@@ -110,6 +110,7 @@ private:
     void characterInit();
     void convertToVert();
 public:
+    std::vector<std::vector<int>> mapH; //Holds the level0 map in Pacman[0]
     Character() {};
     Character(int x, int y);
     Character(int x, int y, bool ai);
@@ -129,7 +130,8 @@ public:
     bool checkGhostCollision();
     void characterAnimate(float hMin, float wMin, float hMax, float wMax);
     void pacAnimate();
-
+    void recieveMap(std::vector<std::vector<int>> lvlVect);
+    int  getMapVal(int x, int y);
     //AI functions
     int   getRandomAIdir();
     void  AIupdateVertice();
@@ -271,7 +273,7 @@ bool Character::getLegalDir(int dir) {
     case 9: testPos[0] += 1; break;      //RIGHT test
     }
     if ((testPos[0] < width && testPos[1] < height) && (0 <= testPos[0] && 0 <= testPos[1])) {
-        if (wallMap[testPos[1]][testPos[0]] != 1) { return true; }
+        if (Pacman[0]->getMapVal(testPos[1],testPos[0]) != 1) { return true; }
         else {return false; }
     }
     else { return false; }    //incase moving outside map illegal untill further notice
@@ -451,6 +453,22 @@ void Character::pacAnimate() {
 }
 
 /**
+ *  Recieves lvlVect int Pacman[0]
+ */
+void Character::recieveMap(std::vector<std::vector<int>> lvlVect) {
+    mapH = lvlVect;
+};
+
+/**
+ *  Returns map value
+ *
+ *  @return returns if coord is wall or not
+ */
+int Character::getMapVal(int x, int y) {
+    return mapH[x][y];
+};
+
+/**
  *  Bruteforces a legal direction for AI
  *
  *  @see      Character::getLegalDir(int dir);
@@ -584,10 +602,10 @@ void Pellet::initCoords() {
             case 3:  vertices[loop] += Xquart; break;
             case 4:  vertices[loop] -= Yquart; break;
 
-            case 6: vertices[loop] -= Xquart; break;
-            case 7: vertices[loop] -= Yquart; break;
+            case 6:  vertices[loop] -= Xquart; break;
+            case 7:  vertices[loop] -= Yquart; break;
 
-            case 9: vertices[loop] -= Xquart; break;
+            case 9:  vertices[loop] -= Xquart; break;
             case 10: vertices[loop] += Yquart; break;
             default: vertices[loop] =  0.0f;   break;
             }
@@ -657,10 +675,12 @@ int main()
 {
     int collected = 0,  //collected pellet counter
         resize = 3;     //resizes window initially 
+    std::vector<std::vector<int>> levelVect = loadFromFile();
     std::vector<GLfloat> map;
 
     // Creates coordinates for map
-    callMapCoordinateCreation(loadFromFile(), &map);
+    callMapCoordinateCreation(levelVect, &map);
+    
 
     // Initialization of GLFW
     if (!glfwInit())
@@ -914,14 +934,10 @@ void drawGhosts(const GLuint shader) {
     glBindVertexArray(ghostVAO);
     glUniform1i(ghostTextureLocation, 1);
 
-    glUniform4f(ghostVertexColorLocation, 0.7f, 0.0f, 0.0f, 1.0f);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void*)0);
-
-    glUniform4f(ghostVertexColorLocation, 0.0f, 0.7f, 0.0f, 1.0f);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void*)24);
-
-    glUniform4f(ghostVertexColorLocation, 0.7f, 0.0f, 0.7f, 1.0f);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void*)48);
+    for (int g = 0; g < (ghostCount*24); g+=24) {
+        glUniform4f(ghostVertexColorLocation, 1.0f, 0.0f, 0.0f, 1.0f);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (const void*)g);
+    }
 
     CleanVAO(ghostVAO);
 }
@@ -1082,7 +1098,7 @@ void TransformPlayer(const GLuint shaderprogram, float lerpProg, float lerpStart
  *  @see Pellet::checkCoords(int XY);
  */
 void callMapCoordinateCreation(std::vector<std::vector<int>> levelVect, std::vector<float>* map) {
-    int formerPos[3] = { 0 }, hallCount = 0;
+    int hallCount = 0;
     for (int i = 0; i < height; i++) {    // creates map
         for (int j = 0; j < width; j++) {
             if (levelVect[i][j] == 1) {
@@ -1097,21 +1113,37 @@ void callMapCoordinateCreation(std::vector<std::vector<int>> levelVect, std::vec
             }
             else if (levelVect[i][j] == 2) {
                 Pacman.push_back(new Character(j, i));
+                Pacman[0]->recieveMap(levelVect);
             }
             else { hallCount++;  Pellets.push_back(new Pellet(j, i)); }
         }
     }
+    time_t t;
+    srand((unsigned)time(&t));
+    std::vector<int> formerPositions;
+    bool noDouble = false;
     do {
-        for (int g = 0; g < 3; g++) {
+        for (int g = 0; g < ghostCount; g++) {
             int randPos;
+            
             randPos = (rand() % hallCount);
-            formerPos[g] = randPos;
+            formerPositions.push_back(randPos);
         }
-    } while (formerPos[0] == formerPos[1] || formerPos[0] == formerPos[2] || formerPos[1] == formerPos[2]);
+        noDouble = true;
+        for (int n = 0; n < ghostCount; n++) {
+            for (int m = (n+1); m < (ghostCount); m++) {
+                if (formerPositions[n] == formerPositions[m]) {
+                    noDouble = false;
+                }
+            }
+        }
+    } while (!noDouble);
     int count = 0;
     for (auto& it : Pellets) {
-        if (count == formerPos[0] || count == formerPos[1] || count == formerPos[2]) {
-            Ghosts.push_back(new Character(it->checkCoords(0), it->checkCoords(1), true));
+        for (int l = 0; l < ghostCount; l++) {
+            if (count == formerPositions[l]) {
+                Ghosts.push_back(new Character(it->checkCoords(0), it->checkCoords(1), true));
+            }
         }
         count++;
     }
@@ -1179,7 +1211,6 @@ std::vector<std::vector<int>> loadFromFile() {
             int Yvalue = (height - 1 - column);
             if (row < width) {
                 tempMapVect[Yvalue][row] = temp;
-                wallMap[(Yvalue)][row] = temp;
                 row++;
                 inn >> temp;
             }
