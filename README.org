@@ -111,3 +111,7 @@ file that is part of the repository.
    to eat /ghosts/. The /ghosts/ eaten will be removed from the game.
  - *Resizable screen:* make the screen resizable. The content should adapt to
    fit the screen. Add an option for full-screen.
+
+** Information
+  *Running instructions:* Extract into Visual stuido and run with either main.cpp or pacman.exe
+  *Controls:* Arrow keys for movement 
