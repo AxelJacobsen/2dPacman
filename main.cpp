@@ -311,7 +311,7 @@ void Character::changeDir() {
         legal = getLegalDir(dir);
     }
 
-    if (legal && (dir % prevDir == 0) && dir != prevDir && !AI) {   //Incase you are trying to turn 180 degrees this procs
+    if (legal && prevDir!=0 && (dir % prevDir == 0) && dir != prevDir && !AI) {   //Incase you are trying to turn 180 degrees this procs
         float coordHolder[2];
         coordHolder[0] = lerpStop[0];      coordHolder[1] = lerpStop[1];
         lerpStop[0]    = lerpStart[0];     lerpStop[1]    = lerpStart[1];
@@ -1200,7 +1200,7 @@ GLuint getIndices(int out, int mid, int in) {
  */
 std::vector<std::vector<int>> loadFromFile() {
     // Read from level file;
-    std::ifstream inn("../../../../levels/level0");
+    std::ifstream inn("../../levels/level0");
     if (inn) {
         inn >> width; inn.ignore(1); inn >> height;
         std::vector<std::vector<int>> tempMapVect(height, std::vector<int>(width, 0));
